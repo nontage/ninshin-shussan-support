@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>妊娠・出産サポート</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: #EDF0E6; }
+  * { box-sizing: border-box; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyDiCN8bhEJElWQkj1Eev39DUrqsXCnlq4o",
+    authDomain: "ninsinapp.firebaseapp.com",
+    projectId: "ninsinapp",
+    storageBucket: "ninsinapp.firebasestorage.app",
+    messagingSenderId: "605974269321",
+    appId: "1:605974269321:web:cc49a9a65962016e7da558"
+  });
+</script>
+<script type="text/babel" data-presets="react">
+
+const { useState } = React;
+
+function makeIcon(children) {
+  return function Icon({ size = 24, color = "currentColor", fill = "none", style, ...rest }) {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill={fill}
+        stroke={color}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={style}
+        {...rest}
+      >
+        {children}
+      </svg>
+    );
+  };
+}
+
+const Wallet = makeIcon(
+  <>
+    <rect x="2" y="6" width="20" height="13" rx="2" />
+    <path d="M2 10h20" />
+    <circle cx="17" cy="14.5" r="1.1" fill="currentColor" stroke="none" />
+  </>
+);
+const ListChecks = makeIcon(
+  <>
+    <path d="M4 6l1.5 1.5L8 4" />
+    <path d="M11 6h10" />
+    <path d="M4 12l1.5 1.5L8 10" />
+    <path d="M11 12h10" />
+    <path d="M4 18l1.5 1.5L8 15" />
+    <path d="M11 18h10" />
+  </>
+);
+const Package = makeIcon(
+  <>
+    <path d="M21 8l-9-5-9 5 9 5 9-5z" />
+    <path d="M3 8v8l9 5 9-5V8" />
+    <path d="M12 13v8" />
+  </>
+);
+const Plus = makeIcon(
+  <>
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </>
+);
+const Trash2 = makeIcon(
+  <>
+    <path d="M3 6h18" />
+    <path d="M8 6V4h8v2" />
+    <path d="M6 6l1 14h10l1-14" />
+    <line x1="10" y1="10" x2="10" y2="16" />
+    <line x1="14" y1="10" x2="14" y2="16" />
+  </>
+);
+const ChevronDown = makeIcon(<polyline points="6 9 12 15 18 9" />);
+const X = makeIcon(
+  <>
+    <line x1="5" y1="5" x2="19" y2="19" />
+    <line x1="19" y1="5" x2="5" y2="19" />
+  </>
+);
+const Scale = makeIcon(
+  <>
+    <path d="M12 3v18" />
+    <path d="M5 7h14" />
+    <path d="M5 7l-3 7a4 4 0 0 0 8 0z" />
+    <path d="M19 7l-3 7a4 4 0 0 0 8 0z" />
+  </>
+);
+const ThumbsUp = makeIcon(
+  <>
+    <path d="M7 11v9" />
+    <path d="M7 11l3-8a2 2 0 0 1 2 2v5h6a2 2 0 0 1 2 2.3l-1.4 6A2 2 0 0 1 16.6 20H7" />
+  </>
+);
+const ThumbsDown = makeIcon(
+  <>
+    <path d="M17 13V4" />
+    <path d="M17 13l-3 8a2 2 0 0 1-2-2v-5H6a2 2 0 0 1-2-2.3l1.4-6A2 2 0 0 1 7.4 4H17" />
+  </>
+);
+const MessageCircle = makeIcon(
+  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+);
+const Star = makeIcon(
+  <polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9" />
+);
+
+
+const FONT_LINK_ID = "sodate-note-fonts";
+if (typeof document !== "undefined" && !document.getElementById(FONT_LINK_ID)) {
+  const link = document.createElement("link");
+  link.id = FONT_LINK_ID;
+  link.rel = "stylesheet";
+  link.href =
+    "https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap";
+  document.head.appendChild(link);
+}
+
+const ACCENTS = {
+  money: { main: "#A8455C", soft: "#F3E3E6", label: "お金・申請" },
+  todo: { main: "#B4791F", soft: "#F3EAD6", label: "やること" },
+  supply: { main: "#3E6C86", soft: "#DFE8EC", label: "必需品" },
+  compare: { main: "#5B5FA8", soft: "#E5E5F2", label: "検討比較" },
+};
+
+// ざっくりとした市場情報・比較サイトや口コミサイトの傾向をもとにした要約。
+// reviewsは特定個人の発言そのままの引用ではなく、複数のレビューサイト・SNS上の
+// 傾向を要約したものです。実際の購入判断の際は、必ず公式サイトや最新の口コミもあわせて確認してください。
+const strollerData = [
+  { id: "st01", name: "コンビ（Combi）", origin: "日本", price: "2〜6万円台", pros: ["「スゴカル」シリーズが軽量で階段移動もラク", "大容量バスケットと片手収納グリップが便利"], cons: ["走行の安定感は上位輸入モデルに一歩譲るとの声", "デザインの華やかさは控えめ"], sns: "「初めての一台」として安心感を挙げる声が多く、価格と機能のバランスへの満足度が高い。", reviews: [
+    { source: "X（旧Twitter）", text: "軽さのおかげでワンオペ帰省もラクだったという投稿が見られる。" },
+    { source: "楽天・Amazonレビュー", text: "軽くて片手でも畳めるので、ワンオペ移動が本当に助かるという声が多い。" },
+    { source: "ママリ系口コミ", text: "エッグショックのクッション性を評価する一方、収納バスケットの奥行きが浅いと感じる人も。" },
+  ] },
+  { id: "st02", name: "アップリカ（Aprica）", origin: "日本", price: "3〜7万円台", pros: ["「オメガクッション」で走行時の振動を吸収", "4輪フリー機構で狭い通路も小回りが利く"], cons: ["上位モデルは価格が高め", "軽量モデルに比べ本体がやや重い"], sns: "「揺れが少なく赤ちゃんが寝やすい」という乗り心地への言及が目立つ。", reviews: [
+    { source: "X（旧Twitter）", text: "「エッグショックが効いてる」と乗り心地を写真付きで紹介する投稿がある。" },
+    { source: "比較サイト", text: "新生児期の振動吸収性を高く評価するレビューが多く、寝かしつけがラクという声も。" },
+    { source: "X（旧Twitter）", text: "4輪フリー機能でスーパーの通路をスイスイ通れると、機動性を喜ぶ投稿が見られる。" },
+  ] },
+  { id: "st03", name: "ピジョン（Pigeon）", origin: "日本", price: "2〜5万円台", pros: ["大径シングルタイヤで安定した走行", "なめらかな押し心地"], cons: ["ベビーカーのラインナップは他社より少なめ", "デザインバリエーションが限定的"], sns: "哺乳瓶などで培った信頼感から選ぶ声はあるが、SNSでの言及数は他ブランドよりやや少ない。", reviews: [
+    { source: "X（旧Twitter）", text: "押した瞬間の軽さに驚いたという短い感想投稿が見られる。" },
+    { source: "口コミサイト", text: "押し心地の軽さを評価するコメントが中心で、長時間の外出でも疲れにくいとの声。" },
+    { source: "楽天レビュー", text: "デザインの選択肢が少ない点を残念がる投稿も見られる。" },
+  ] },
+  { id: "st04", name: "サイベックス（Cybex）", origin: "ドイツ", price: "8〜20万円台", pros: ["安全性・デザイン性・機能性を高い水準で両立", "「GOLD リベル」など上位モデルの走行性が高評価"], cons: ["価格帯が高め", "本体重量があり持ち運びにコツがいる"], sns: "「おしゃれで街で映える」とデザイン目当ての投稿が多い一方、「値段の割に重い」という指摘も見られる。", reviews: [
+    { source: "X（旧Twitter）", text: "デザイン性の高さと自転車のカゴに置けるコンパクトさを評価する投稿が目立つ。" },
+    { source: "比較ブログ", text: "階段の上り下りが多い家庭からは、重量面での負担を挙げる声もある。" },
+  ] },
+  { id: "st05", name: "ジョイー（Joie）", origin: "イギリス", price: "3〜6万円台", pros: ["海外ブランドの中ではコストパフォーマンスが高い", "二人乗りモデルなどラインナップが豊富"], cons: ["ブランドの高級感は上位勢に及ばない"], sns: "「輸入ブランドを手頃な価格で試したい」層からの支持コメントが多い。", reviews: [
+    { source: "X（旧Twitter）", text: "コスパの良さを他ブランドと比較しながら紹介する投稿が見られる。" },
+    { source: "Yahoo!ショッピングレビュー", text: "価格の割にしっかりした作りだと満足するコメントが多く見られる。" },
+    { source: "口コミサイト", text: "双子・年子育児での二人乗りモデルへの実用的な評価が目立つ。" },
+  ] },
+  { id: "st06", name: "バガブー（Bugaboo）", origin: "オランダ", price: "15〜25万円台", pros: ["高級ベビーカーランキングで常に上位の走行性", "豊富なカラー・アクセサリでカスタム可能"], cons: ["価格が非常に高い", "パーツ交換や付属品でさらに費用がかさみやすい"], sns: "インフルエンサーや芸能人の使用報告が多く、「街で他の人と被らない」という声が目立つ。", reviews: [
+    { source: "Yahoo!ショッピングレビュー", text: "走行性の良さを絶賛する声が多いが、車移動でないと重さが気になるという指摘も。" },
+    { source: "個人ブログ", text: "機内持ち込みができないサイズなので旅行前提の人は要注意という体験談がある。" },
+  ] },
+  { id: "st07", name: "グレコ（Graco）", origin: "アメリカ", price: "2〜4万円台", pros: ["価格の割に耐久性がしっかりしている", "トラベルシステム対応モデルが多い"], cons: ["国内向けのデザインバリエーションが少なめ"], sns: "「値段の割にしっかりしている」というコスパ重視の口コミが中心。", reviews: [
+    { source: "X（旧Twitter）", text: "「思ったよりしっかりしてる」という安さへの驚きを含む投稿がある。" },
+    { source: "Amazonレビュー", text: "セカンドカーとしてコスパ良く買えたという声が多い。" },
+    { source: "口コミサイト", text: "チャイルドシートとセットで使える点を評価する投稿が見られる。" },
+  ] },
+  { id: "st08", name: "エアバギー（AirBuggy）", origin: "日本", price: "5〜10万円台", pros: ["大径タイヤで段差や悪路に強い", "全11色ほどのカラー展開でデザイン性が高い"], cons: ["本体重量があり、折りたたみに慣れが必要"], sns: "「オーバルフレームのロゴがかわいい」とデザイン面での投稿が多い。", reviews: [
+    { source: "X（旧Twitter）", text: "公園でよく見かけるという投稿とともにデザインが話題になっている。" },
+    { source: "X（旧Twitter）", text: "公園や砂利道でも押しやすいと、悪路走行性への好意的な投稿が目立つ。" },
+    { source: "比較ブログ", text: "折りたたみ方にコツが要り、最初は戸惑ったという声も見られる。" },
+  ] },
+  { id: "st09", name: "ストッケ（Stokke）", origin: "ノルウェー", price: "10〜20万円台", pros: ["人間工学に基づいた設計で「エクスプローリー X」などシート高さ調整が可能", "赤ちゃんの目線が高く景色を見やすい"], cons: ["価格帯が高い", "対応アクセサリも高額になりがち"], sns: "「シートが高くて赤ちゃんの表情が見える」という口コミが好意的に語られている。", reviews: [
+    { source: "個人ブログ", text: "対面時に赤ちゃんの顔がよく見えて安心という体験談が多い。" },
+    { source: "比較サイト", text: "本体だけでなく付属アクセサリも高額になりやすいと予算面の指摘がある。" },
+  ] },
+  { id: "st10", name: "イングリッシーナ（Inglesina）", origin: "イタリア", price: "8〜15万円台", pros: ["イタリアらしい洗練されたデザイン", "「クイッド」など軽量モデルもラインナップ"], cons: ["国内の取扱店舗が少なめで試乗しにくい"], sns: "他ブランドに比べて言及数は少ないが「デザインで選んだ」という声がある。", reviews: [
+    { source: "X（旧Twitter）", text: "「知る人ぞ知るブランド」として紹介する投稿が見られる。" },
+    { source: "個人ブログ", text: "他の人と被りにくいデザインに惹かれて選んだという投稿が見られる。" },
+    { source: "口コミサイト", text: "試乗できる店舗が少なく、購入前の比較がしづらいという声も。" },
+  ] },
+  { id: "st11", name: "ベビーゼン／YOYO（BABYZEN／Stokke YOYO）", origin: "フランス", price: "6〜10万円台", pros: ["片手で瞬時に折りたためる", "機内持ち込みサイズでコンパクト"], cons: ["シートがやや硬めという声", "新生児期は別売りパーツが必要な場合がある"], sns: "海外旅行や帰省が多い家庭から「旅行に最強」と絶賛する投稿が多い。", reviews: [
+    { source: "X（旧Twitter）", text: "機内持ち込みができて飛行機移動が本当にラクになったという投稿が多い。" },
+    { source: "口コミサイト", text: "シートのクッション性は薄めで、長時間の昼寝には工夫が必要という声。" },
+  ] },
+  { id: "st12", name: "マキシコシ（Maxi-Cosi）", origin: "オランダ", price: "5〜12万円台", pros: ["チャイルドシートとの連携が強み", "トラベルシステムとして使いやすい"], cons: ["ベビーカー単体としてのブランド力はやや弱め"], sns: "「チャイルドシートと合わせて使える」という実用面のコメントが中心。", reviews: [
+    { source: "X（旧Twitter）", text: "チャイルドシートと合わせて使う様子を紹介する投稿がある。" },
+    { source: "口コミサイト", text: "車移動が多い家庭からチャイルドシートとの連携の良さを評価する声。" },
+    { source: "比較ブログ", text: "ベビーカー単体としての知名度はまだ発展途上という指摘もある。" },
+  ] },
+  { id: "st13", name: "ヌナ（Nuna）", origin: "オランダ", price: "10〜18万円台", pros: ["「MIXX next」などデザイン性の高さ", "乗り心地の良さで高評価"], cons: ["価格が高め"], sns: "海外のインフルエンサー発信をきっかけに日本でも人気が広がっている。", reviews: [
+    { source: "X（旧Twitter）", text: "海外セレブ・インフルエンサーの投稿をきっかけに知ったという声が増えている。" },
+    { source: "個人ブログ", text: "サスペンションの効きが良く、街乗りでの快適さを評価する体験談。" },
+  ] },
+  { id: "st14", name: "マクラーレン（Maclaren）", origin: "イギリス", price: "3〜8万円台", pros: ["軽量でサスペンション付きの走行性", "B型ベビーカーの草分け的存在として実績が長い"], cons: ["過去に指はさみ事故の報道があり、慎重派もいる（現在は改善対応済み）"], sns: "「昔から信頼している」という声と、事故報道を気にする声の両方が見られる。", reviews: [
+    { source: "X（旧Twitter）", text: "「うちの子も使ってた」と世代を超えて語られる投稿がある。" },
+    { source: "口コミサイト", text: "軽さと折りたたみやすさへの評価が長年にわたって根強い。" },
+    { source: "比較ブログ", text: "過去の事故報道を知って購入をためらったという声も一定数ある。" },
+  ] },
+  { id: "st15", name: "イージーウォーカー（Easywalker）", origin: "オランダ", price: "8〜15万円台", pros: ["北欧らしいスタイリッシュなデザイン"], cons: ["国内の取扱・アフターサポートが限定的"], sns: "SNSでの言及自体がまだ少なく、情報収集がしづらい。", reviews: [
+    { source: "X（旧Twitter）", text: "デザインの写真投稿はあるが、コメント数自体は少なめ。" },
+    { source: "個人ブログ", text: "デザイン重視で選んだが、修理対応の窓口探しに苦労したという声。" },
+  ] },
+  { id: "st16", name: "ドゥーナ（Doona）", origin: "アメリカ／イスラエル", price: "8〜10万円台", pros: ["チャイルドシートがそのままベビーカーになる一体型", "車移動やタクシー移動が多い都市部の生活と相性が良い"], cons: ["本体が重く、通常のベビーカーほどの押し心地ではない"], sns: "「タクシー移動が多いので助かる」という都市部ママの体験談が目立つ。", reviews: [
+    { source: "X（旧Twitter）", text: "タクシーに乗る直前にワンタッチで切り替えられて助かるという投稿が多い。" },
+    { source: "口コミサイト", text: "長距離のお散歩用としては車輪が小さく押しにくいという声もある。" },
+  ] },
+  { id: "st17", name: "ハウク（Hauck）", origin: "ドイツ", price: "3〜6万円台", pros: ["トラベルシステム対応で、100年以上の歴史がある", "価格が手頃"], cons: ["デザインは実用重視でシンプル"], sns: "他の海外ブランドに比べると言及数は少なめ。", reviews: [
+    { source: "X（旧Twitter）", text: "価格の手頃さに触れた短い感想投稿が見られる。" },
+    { source: "Amazonレビュー", text: "価格の手頃さと基本性能のバランスを評価する声が中心。" },
+  ] },
+  { id: "st18", name: "フィルアンドテッズ（phil&teds）", origin: "ニュージーランド", price: "6〜12万円台", pros: ["縦型2人乗り（タンデム）に強い", "兄弟育児との相性が良い"], cons: ["日本の狭い通路ではやや取り回しにくいという声"], sns: "「兄弟育児に便利」という体験談を中心に語られる。", reviews: [
+    { source: "個人ブログ", text: "年子・きょうだいのお出かけが一台でこなせて助かるという体験談。" },
+    { source: "口コミサイト", text: "全長が長めなので、エレベーターや電車内での取り回しに苦労する声も。" },
+  ] },
+  { id: "st19", name: "ママズ&パパズ（Mamas & Papas）", origin: "イギリス", price: "6〜12万円台", pros: ["クラシックで上品なデザイン"], cons: ["国内の流通が限定的で入手しにくい"], sns: "国内SNSでの情報量はまだ少ない。", reviews: [
+    { source: "X（旧Twitter）", text: "個人輸入の様子を紹介する投稿がまれに見られる。" },
+    { source: "個人ブログ", text: "上品なデザインが気に入って個人輸入したという投稿も見られる。" },
+  ] },
+  { id: "st20", name: "シルバークロス（Silver Cross）", origin: "イギリス", price: "15〜30万円台", pros: ["アストンマーティンエディションなど超高級路線", "所有満足度の高さ"], cons: ["非常に高価格", "サイズが大きめで収納・持ち運びに場所を取る"], sns: "「格が違う」という所有満足度に関する投稿が話題になりやすい。", reviews: [
+    { source: "X（旧Twitter）", text: "存在感のあるデザインで「街で二度見された」という投稿が話題になることも。" },
+    { source: "比較ブログ", text: "玄関やトランクでの収納スペースを事前に確認すべきという指摘がある。" },
+  ] },
+  { id: "st21", name: "ペグペレーゴ（Peg Pérego）", origin: "イタリア", price: "5〜10万円台", pros: ["60年以上の歴史を持つ老舗で、頑丈なフレームが特徴", "双子・年子用モデルなどラインナップが豊富"], cons: ["モデルによっては本体が重め", "国内は輸入代理店（カトージ）経由での購入が中心"], sns: "「頑丈で長く使える」という声や、双子・年子育児中の家庭からの支持コメントが目立つ。", reviews: [
+    { source: "X（旧Twitter）", text: "「頑丈さが違う」と長期使用の様子を紹介する投稿がある。" },
+    { source: "個人ブログ", text: "ガタつきの少なさと押しやすさを評価する声が多い。" },
+    { source: "口コミサイト", text: "サイズが大きめなので玄関の収納スペースを確認したという体験談。" },
+  ] },
+  { id: "st22", name: "アップベイビー（UPPAbaby）", origin: "アメリカ", price: "8〜15万円台", pros: ["バシネットやセカンドシートなど拡張パーツが豊富", "海外の育児インフルエンサーからの紹介が多い"], cons: ["日本国内の正規取扱・保証体制はまだ限定的"], sns: "海外SNSでは「拡張性の高さ」が頻繁に話題になるが、国内での認知度はこれから。", reviews: [
+    { source: "X（旧Twitter）", text: "海外のママアカウントがパーツ拡張の様子を紹介する投稿が多い。" },
+    { source: "海外SNS（Instagram等）", text: "きょうだい構成に合わせてパーツを組み替えられる点への評価が高い。" },
+    { source: "個人ブログ", text: "国内での並行輸入は保証やパーツ調達に注意が必要という指摘。" },
+  ] },
+  { id: "st23", name: "アイキャンディ（iCandy）", origin: "イギリス", price: "10〜20万円台", pros: ["モジュール型でシートを組み替え、兄弟構成に合わせて拡張できる", "デザイン性の高さ"], cons: ["価格が高め", "パーツ構成が複雑で理解に時間がかかる"], sns: "「二人目・三人目でも組み替えて使える」という声が中心。", reviews: [
+    { source: "個人ブログ", text: "パーツを買い足せば双子仕様にもできる柔軟性を評価する声。" },
+  ] },
+  { id: "st24", name: "ベビージョガー（Baby Jogger）", origin: "アメリカ", price: "5〜10万円台", pros: ["ジョギングにも使える走行安定性", "「シティミニ」シリーズが定番として人気"], cons: ["サイズがやや大きめ"], sns: "アウトドアやジョギングを楽しむ家庭からの支持コメントが多い。", reviews: [
+    { source: "X（旧Twitter）", text: "ジョギング中の様子を紹介する投稿が見られる。" },
+    { source: "口コミサイト", text: "段差や砂利道でも安定して押せるという体験談が目立つ。" },
+  ] },
+  { id: "st25", name: "クイニー（Quinny）", origin: "オランダ", price: "4〜8万円台", pros: ["「ZAPP」シリーズが小型車のトランクにも収まるコンパクトさで有名", "ビビッドなカラー展開"], cons: ["近年は店頭で見かける機会が減っているとの声"], sns: "「昔からのファンが多い」というコメントとともに語られることが多いブランド。", reviews: [
+    { source: "X（旧Twitter）", text: "「懐かしい」というコメントとともに紹介されることがある。" },
+    { source: "個人ブログ", text: "コンパクトさに惚れ込んで長年愛用しているという声がある。" },
+  ] },
+];
+
+const carrierData = [
+  { id: "ca01", name: "エルゴベビー（Ergobaby）", origin: "アメリカ", price: "1.5〜3.5万円台", pros: ["対面・前向き・おんぶなど幅広い抱き方に対応する定番モデル「OMNI」シリーズ", "人間工学に基づいた肩・腰サポート設計"], cons: ["本体がやや重め", "夏場はムレやすいという声（Breezeシリーズで改善傾向）"], sns: "「知らない人はいない」というほどの定番として言及数が圧倒的に多い。", reviews: [
+    { source: "ママリ系口コミ", text: "肩・腰への負担が少なく、装着に慣れると手放せなくなるという声が多い。" },
+    { source: "口コミサイト", text: "収納時にかさばりやすく、専用の収納袋が欲しくなるという指摘がある。" },
+    { source: "X（旧Twitter）", text: "なで肩だと肩ひもがズレやすいと感じる人もいるという投稿。" },
+  ] },
+  { id: "ca02", name: "ベビービョルン（BabyBjörn）", origin: "スウェーデン", price: "1.5〜3万円台", pros: ["装着がシンプルで軽量", "「MINI」シリーズはパパでもすぐ使えると評判"], cons: ["長時間使用だと肩への負担を感じるという声"], sns: "「装着の簡単さ」を評価するコメントが多い。", reviews: [
+    { source: "X（旧Twitter）", text: "バックルが少なく直感的に着けられるので、パパの育児参加のハードルが下がったという声。" },
+    { source: "比較ブログ", text: "新生児期は足の形が気になるという口コミもあり、上位モデルとの比較が語られやすい。" },
+  ] },
+  { id: "ca03", name: "コニー（Konny）", origin: "韓国", price: "0.8〜1.5万円台", pros: ["伸縮性のある布一枚でさっと装着できる", "コンパクトに畳めてセカンド抱っこ紐にも人気"], cons: ["バックルがない分、月齢が上がると重さが肩にくるという声"], sns: "口コミサイトで「よく寝てくれる」と高評価が多い一方、「サイズがきつい」「色落ちする」といった指摘も見られる。", reviews: [
+    { source: "ママリ系口コミ", text: "ゆらゆらするとすぐ寝てくれると、寝かしつけの相棒として支持する声が多い。" },
+    { source: "個人ブログ", text: "最初はバックルがない構造に慣れが必要だったという体験談がある。" },
+    { source: "口コミサイト", text: "体重が増えてくると長時間使用で肩にくるという声も見られる。" },
+  ] },
+  { id: "ca04", name: "アップリカ（Aprica）", origin: "日本", price: "1〜2万円台", pros: ["「コアラ ウルトラメッシュEX」など通気性重視の設計"], cons: ["デザインの選択肢は控えめ"], sns: "比較サイトのランキングで上位に入ることが多い。", reviews: [
+    { source: "X（旧Twitter）", text: "メッシュ素材の涼しさを写真付きで紹介する投稿が見られる。" },
+    { source: "比較サイト", text: "メッシュ構造による通気性の高さを評価する声が多い。" },
+    { source: "Amazonレビュー", text: "夏場でも蒸れにくく快適という口コミが目立つ。" },
+  ] },
+  { id: "ca05", name: "グスケット（GOOSEKET）", origin: "日本", price: "0.5万円前後", pros: ["シンプルな構造で持ち運びやすいセカンド抱っこ紐"], cons: ["新生児期からのメイン使用には不向き"], sns: "「サブ用として便利」という声が中心。", reviews: [
+    { source: "X（旧Twitter）", text: "バッグに常備している様子を紹介する投稿がある。" },
+    { source: "個人ブログ", text: "バッグに常備できる軽さで、ちょい抱き用として重宝するという声。" },
+  ] },
+  { id: "ca06", name: "スモルビ（SMORbi）", origin: "韓国", price: "1〜1.5万円台", pros: ["ラップタイプで密着感が高い"], cons: ["装着に慣れが必要"], sns: "コニーと同カテゴリで比較されることが多い。", reviews: [
+    { source: "X（旧Twitter）", text: "コニーとの装着感の違いを比較する投稿が見られる。" },
+    { source: "比較ブログ", text: "密着感の高さで新生児期の抱っこに向いているという評価がある。" },
+  ] },
+  { id: "ca07", name: "コンビ（Combi）", origin: "日本", price: "1〜2万円台", pros: ["ベビーカーと合わせたブランド統一感", "国内定番としての安心感"], cons: ["デザインの華やかさは他社に劣るという声"], sns: "「コニーと併用している」という比較コメントが目立つ。", reviews: [
+    { source: "X（旧Twitter）", text: "国内定番として安心して選んだという投稿がある。" },
+    { source: "口コミサイト", text: "しっかりした作りで長く使えるという安心感を挙げる声が多い。" },
+  ] },
+  { id: "ca08", name: "ナップナップ（napnap）", origin: "日本", price: "1〜1.5万円台", pros: ["ヒップシート型で対象月齢の幅が広い"], cons: ["ヒップシート部分がかさばる"], sns: "ヒップシート比較動画で頻繁に取り上げられるブランドのひとつ。", reviews: [
+    { source: "X（旧Twitter）", text: "ヒップシートに切り替えた経緯を紹介する投稿が見られる。" },
+    { source: "比較動画・ブログ", text: "腰が据わってからの抱っこが格段にラクになったという声が多い。" },
+  ] },
+  { id: "ca09", name: "ラッキー工業／angelette", origin: "日本", price: "1〜2万円台", pros: ["日本人の体形に合わせた設計", "キャリーパーツを外してチェアベルトとしても使える"], cons: ["モデルによっては落下防止ベルトがない"], sns: "「体格に合っている」という国内ユーザーの声が多い。", reviews: [
+    { source: "X（旧Twitter）", text: "体格にフィットした喜びを紹介する投稿がある。" },
+    { source: "楽天レビュー", text: "小柄な体形でもフィットしやすいという声が目立つ。" },
+  ] },
+  { id: "ca10", name: "キューズベリー（CUSEBERRY）", origin: "日本", price: "1.5〜2.5万円台", pros: ["デニム地など他にない個性的なデザイン", "前開きジッパーで赤ちゃんを降ろしやすい"], cons: ["価格はやや高め"], sns: "「他と被らないデザイン」としてSNS映え目的での購入コメントも見られる。", reviews: [
+    { source: "X（旧Twitter）", text: "デニム生地のおしゃれさを写真付きで紹介する投稿が多い。" },
+    { source: "個人ブログ", text: "寝ている子をそのまま降ろせるジッパー構造が便利という声。" },
+  ] },
+  { id: "ca11", name: "ポグネー（Pognae）", origin: "韓国", price: "1.5〜2.5万円台", pros: ["ヒップシートと抱っこ紐の一体型でしっかりした腰サポート"], cons: ["腰ベルトが重く、持ち運び時にかさばるという声"], sns: "「しっかり支えてくれる」と安定感を評価する口コミが多い。", reviews: [
+    { source: "比較ブログ", text: "腰ベルトのホールド感が強く、長時間でも疲れにくいという声。" },
+    { source: "口コミサイト", text: "外出先で使わない時にベルトが畳みにくく、かさばるという指摘。" },
+  ] },
+  { id: "ca12", name: "ミアミリー（MiaMily）", origin: "スイス", price: "1.5〜2.5万円台", pros: ["「ヒップスタープラス」など腰痛対策設計"], cons: ["サイズが大きめで持ち運びに不便という声"], sns: "ヒップシート系の比較動画で常連ブランドとして紹介される。", reviews: [
+    { source: "X（旧Twitter）", text: "腰の負担が減ったという体験を紹介する投稿が見られる。" },
+    { source: "比較動画・ブログ", text: "腰への負担軽減を実感したという体験談が中心。" },
+  ] },
+  { id: "ca13", name: "アイエンジェル（i-angel）", origin: "韓国", price: "1.5〜2.5万円台", pros: ["「ドクターダイヤル」など機能性重視のヒップシート"], cons: ["他のヒップシートブランドに比べ知名度がやや低い"], sns: "比較動画では取り上げられるが単独レビューは少なめ。", reviews: [
+    { source: "X（旧Twitter）", text: "ダイヤル調整の使いやすさを紹介する投稿がある。" },
+    { source: "比較動画・ブログ", text: "ダイヤルでサイズ調整できる機能性を評価する声がある。" },
+  ] },
+  { id: "ca14", name: "ダッコリーノ", origin: "日本", price: "0.5〜1万円台", pros: ["シンプルで軽量なセカンド抱っこ紐"], cons: ["メインとしての耐久性は限定的"], sns: "SNSでの情報量は少なめ。", reviews: [
+    { source: "X（旧Twitter）", text: "旅行の持ち物として紹介される投稿が見られる。" },
+    { source: "個人ブログ", text: "旅行や帰省時のサブ抱っこ紐として持ち運びやすいという声。" },
+  ] },
+  { id: "ca15", name: "sun&beach", origin: "日本", price: "1.5〜2万円台", pros: ["「Organic Mesh One」が専門家比較企画でベストバイに選ばれた実績"], cons: ["知名度はまだ高くない"], sns: "雑誌のプロ比較企画で高評価を受けたことが話題になっている。", reviews: [
+    { source: "X（旧Twitter）", text: "専門家の検証企画をきっかけに知ったという投稿がある。" },
+    { source: "比較企画（雑誌系メディア）", text: "専門家による検証企画でメッシュ素材の快適さが高く評価された。" },
+  ] },
+  { id: "ca16", name: "エールベベ（AILBEBE／カーメイト）", origin: "日本", price: "1〜2万円台", pros: ["「ベビーキャリアスリー」など量販店での定番モデル"], cons: ["デザインの目新しさは控えめ"], sns: "比較ランキングサイトで上位に入ることが多い。", reviews: [
+    { source: "X（旧Twitter）", text: "量販店で試着してから購入した様子を紹介する投稿が見られる。" },
+    { source: "比較サイト", text: "量販店で試着してから買えた安心感を挙げる声が多い。" },
+  ] },
+  { id: "ca17", name: "ピジョン（Pigeon）", origin: "日本", price: "1〜2万円台", pros: ["ベビー用品総合メーカーとしての信頼感"], cons: ["抱っこ紐単体としての話題性はやや低め"], sns: "他カテゴリ製品に比べるとSNSでの言及は少なめ。", reviews: [
+    { source: "X（旧Twitter）", text: "総合ブランドとしての安心感に触れた投稿がある。" },
+    { source: "口コミサイト", text: "総合ベビー用品メーカーとしての安心感から選んだという声。" },
+  ] },
+  { id: "ca18", name: "エアバギー（AirBuggy／GMP）", origin: "日本", price: "2〜3万円台", pros: ["「コンフォ」モデルが高級カテゴリで高評価"], cons: ["価格帯は高め"], sns: "比較サイトの高級抱っこ紐ランキングで上位常連。", reviews: [
+    { source: "X（旧Twitter）", text: "フィット感の良さを紹介する投稿が見られる。" },
+    { source: "比較サイト", text: "フィット感とクッション性の高さで上位評価を得ている。" },
+  ] },
+  { id: "ca19", name: "ベッタ（Betta）", origin: "日本", price: "1〜2万円台", pros: ["「キャリーミー」などスリングタイプが日本製で人気", "出産祝いの定番としても選ばれやすい"], cons: ["スリングは正しい抱き方に慣れが必要"], sns: "出産祝いギフトとしての紹介・言及が多い。", reviews: [
+    { source: "個人ブログ", text: "出産祝いでもらって使い始め、コンパクトさが気に入ったという声。" },
+    { source: "口コミサイト", text: "正しい装着姿勢を覚えるまで少し練習が必要という体験談。" },
+  ] },
+  { id: "ca20", name: "タラ／ボバ（Tula／Boba）", origin: "アメリカ", price: "1.5〜2.5万円台", pros: ["総柄などデザインバリエーションが豊富でSNS映えする"], cons: ["国内正規取扱やサイズ調整に関する情報が少なめ"], sns: "海外インスタグラマー発信のデザイン人気が日本にも波及している。", reviews: [
+    { source: "X（旧Twitter）", text: "海外の柄物デザインをきっかけに知ったという投稿が増えている。" },
+  ] },
+  { id: "ca21", name: "マンジュカ（manduca）", origin: "ドイツ", price: "1.5〜2.5万円台", pros: ["新生児からインサートなしで使える設計", "麻素材で通気性がよく、洗濯にも強い"], cons: ["腰のバックルが硬めで片手では開けにくい（安全性重視の設計）"], sns: "「エルゴ以外の選択肢」として名前が挙がることが多いブランド。", reviews: [
+    { source: "個人ブログ", text: "子どもの首がだらんと後ろに垂れにくい構造を評価する声が多い。" },
+    { source: "口コミサイト", text: "バックルの硬さは最初戸惑うが、慣れれば問題ないという体験談。" },
+  ] },
+  { id: "ca22", name: "ベビーアンドミー（baby&me）", origin: "韓国", price: "1.5〜2.5万円台", pros: ["ヒップシート市場で人気が高く、ショルダー部分のホールド感に定評", "おんぶにも対応"], cons: ["ヒップシート部分を折りたたんで収納できないモデルがある"], sns: "ママリ口コミ大賞などで「肩の負担軽減に感動した」という声が多数寄せられている。", reviews: [
+    { source: "ママリ系口コミ", text: "腰が辛くなってきた頃に導入し、肩の負担が大きく減ったという声が多い。" },
+    { source: "口コミサイト", text: "上の子・下の子どちらの抱っこもラクになったという体験談が目立つ。" },
+  ] },
+  { id: "ca23", name: "ダディッコ（dad'cco）", origin: "日本", price: "1.5〜2.5万円台", pros: ["車のシートベルトメーカーが開発", "薄型で座面の角度調整ができる"], cons: ["ヒップシート大手ブランドに比べ知名度はまだ高くない"], sns: "「専門メーカーならではの安心感」という声が挙がっている。", reviews: [
+    { source: "X（旧Twitter）", text: "薄型で持ち運びやすいと紹介する投稿が見られる。" },
+    { source: "比較サイト", text: "かさばらない薄型設計を評価するコメントが見られる。" },
+  ] },
+  { id: "ca24", name: "リルベビー（LILLEbaby）", origin: "アメリカ", price: "1.5〜2.5万円台", pros: ["対面・前向き・おんぶ・腰抱きなど多機能な設計"], cons: ["国内の取扱店舗はまだ限定的"], sns: "海外の口コミでは抱き方の幅広さが評価されている。", reviews: [
+    { source: "X（旧Twitter）", text: "多機能さを紹介する海外アカウントの投稿がある。" },
+    { source: "海外口コミサイト", text: "1台で複数の抱き方に対応できる汎用性を評価する声が多い。" },
+  ] },
+  { id: "ca25", name: "テラスベビー／DaG", origin: "日本", price: "1〜1.5万円台", pros: ["シェル型ヒップシートでコンパクトに折りたためる"], cons: ["メイン使用というよりセカンド向けという声"], sns: "比較サイトで「コスパの良いセカンドヒップシート」として紹介されることが多い。", reviews: [
+    { source: "X（旧Twitter）", text: "コスパの良さに触れた投稿が見られる。" },
+    { source: "比較サイト", text: "価格の手頃さと持ち運びやすさへの評価が中心。" },
+  ] },
+];
+
+const initialMoney = [
+  { id: "m1", title: "妊娠届出書・母子手帳の交付", deadline: "妊娠がわかったらすぐ", amount: "", memo: "自治体窓口へ", done: true },
+  { id: "m2", title: "出産育児一時金", deadline: "出産後2年以内", amount: "50万円", memo: "直接支払制度なら手続き不要な場合も", done: false },
+  { id: "m3", title: "出生届", deadline: "出生から14日以内", amount: "", memo: "出生証明書とあわせて役所へ", done: false },
+  { id: "m4", title: "児童手当", deadline: "出生から15日以内", amount: "月1〜1.5万円", memo: "遅れると遡れないので注意", done: false },
+  { id: "m5", title: "乳幼児医療費助成", deadline: "出生届と同時が安心", amount: "", memo: "自治体により内容が異なる", done: false },
+  { id: "m6", title: "高額療養費・医療費控除", deadline: "確定申告時", amount: "", memo: "帝王切開など高額時は要確認", done: false },
+];
+
+const TODO_PHASES = ["妊娠初期（〜15週）", "妊娠中期（16〜27週）", "妊娠後期（28週〜）", "産後（〜1か月）", "産後（1か月〜）"];
+
+const initialTodo = [
+  { id: "t1", title: "産院・分娩方法を決める", phase: "妊娠初期（〜15週）", done: true, memo: "" },
+  { id: "t2", title: "両親学級に参加する", phase: "妊娠中期（16〜27週）", done: false, memo: "" },
+  { id: "t3", title: "入院バッグを準備する", phase: "妊娠後期（28週〜）", done: false, memo: "" },
+  { id: "t4", title: "里帰り出産の相談・調整", phase: "妊娠中期（16〜27週）", done: false, memo: "" },
+  { id: "t5", title: "保育園の情報収集を始める", phase: "妊娠中期（16〜27週）", done: false, memo: "" },
+  { id: "t6", title: "出生届を提出する", phase: "産後（〜1か月）", done: false, memo: "" },
+  { id: "t7", title: "健康保険への加入手続き", phase: "産後（〜1か月）", done: false, memo: "" },
+  { id: "t8", title: "1か月健診の予約", phase: "産後（1か月〜）", done: false, memo: "" },
+];
+
+const initialSupply = [
+  { id: "s1", title: "新生児用肌着・ウェア", category: "衣類", done: false },
+  { id: "s2", title: "おむつ・おしりふき", category: "衣類", done: false },
+  { id: "s3", title: "ベビーバス・沐浴グッズ", category: "衣類", done: false },
+  { id: "s4", title: "哺乳瓶・粉ミルク", category: "授乳", done: false },
+  { id: "s5", title: "チャイルドシート", category: "外出", done: false },
+  { id: "s6", title: "ベビーカー", category: "外出", done: false },
+  { id: "s7", title: "抱っこ紐", category: "外出", done: false },
+  { id: "s8", title: "ベビーベッド・寝具", category: "寝具", done: false },
+];
+
+function Stamp({ active }) {
+  return (
+    <span
+      style={{
+        width: 30,
+        height: 30,
+        borderRadius: "50%",
+        border: `2px solid ${active ? "#B23A48" : "#C9CDC0"}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+        transform: active ? "rotate(-8deg)" : "none",
+        transition: "all 0.2s ease",
+        background: active ? "rgba(178,58,72,0.06)" : "transparent",
+      }}
+    >
+      {active && (
+        <span
+          style={{
+            fontFamily: "'Shippori Mincho', serif",
+            fontSize: 12,
+            fontWeight: 700,
+            color: "#B23A48",
+            letterSpacing: -1,
+          }}
+        >
+          済
+        </span>
+      )}
+    </span>
+  );
+}
+
+function ProgressBar({ done, total, accent }) {
+  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+  return (
+    <div style={{ width: "100%" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontFamily: "'Zen Kaku Gothic New', sans-serif",
+          fontSize: 12,
+          color: "#5C6355",
+          marginBottom: 6,
+        }}
+      >
+        <span>{done} / {total} 完了</span>
+        <span>{pct}%</span>
+      </div>
+      <div style={{ height: 6, borderRadius: 4, background: "#E4E7DC", overflow: "hidden" }}>
+        <div
+          style={{
+            width: `${pct}%`,
+            height: "100%",
+            background: accent,
+            borderRadius: 4,
+            transition: "width 0.3s ease",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function AddRow({ accent, placeholder, onAdd, extraField }) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [extra, setExtra] = useState("");
+
+  const submit = () => {
+    if (!text.trim()) return;
+    onAdd(text.trim(), extra.trim());
+    setText("");
+    setExtra("");
+    setOpen(false);
+  };
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        style={{
+          width: "100%",
+          marginTop: 10,
+          padding: "10px 14px",
+          borderRadius: 12,
+          border: `1.5px dashed ${accent}66`,
+          background: "transparent",
+          color: accent,
+          fontFamily: "'Zen Kaku Gothic New', sans-serif",
+          fontSize: 13,
+          fontWeight: 500,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          cursor: "pointer",
+        }}
+      >
+        <Plus size={15} /> 追加する
+      </button>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        marginTop: 10,
+        padding: 12,
+        borderRadius: 12,
+        background: "#fff",
+        border: `1px solid ${accent}33`,
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+      }}
+    >
+      <input
+        autoFocus
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder={placeholder}
+        style={{
+          border: "none",
+          borderBottom: "1px solid #E4E7DC",
+          padding: "6px 2px",
+          fontFamily: "'Zen Kaku Gothic New', sans-serif",
+          fontSize: 14,
+          outline: "none",
+          background: "transparent",
+          color: "#262B22",
+        }}
+      />
+      {extraField && (
+        <input
+          value={extra}
+          onChange={(e) => setExtra(e.target.value)}
+          placeholder={extraField}
+          style={{
+            border: "none",
+            borderBottom: "1px solid #E4E7DC",
+            padding: "6px 2px",
+            fontFamily: "'Zen Kaku Gothic New', sans-serif",
+            fontSize: 13,
+            outline: "none",
+            background: "transparent",
+            color: "#5C6355",
+          }}
+        />
+      )}
+      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+        <button
+          onClick={() => setOpen(false)}
+          style={{ border: "none", background: "none", color: "#9AA192", fontSize: 12, cursor: "pointer", padding: "6px 10px" }}
+        >
+          キャンセル
+        </button>
+        <button
+          onClick={submit}
+          style={{
+            border: "none",
+            background: accent,
+            color: "#fff",
+            fontSize: 12,
+            fontWeight: 600,
+            borderRadius: 8,
+            padding: "6px 14px",
+            cursor: "pointer",
+          }}
+        >
+          追加
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function MoneyTab({ items, setItems }) {
+  const accent = ACCENTS.money.main;
+  const toggle = (id) => setItems(items.map((it) => (it.id === id ? { ...it, done: !it.done } : it)));
+  const remove = (id) => setItems(items.filter((it) => it.id !== id));
+  const add = (title, deadline) =>
+    setItems([...items, { id: `m${Date.now()}`, title, deadline, amount: "", memo: "", done: false }]);
+  const done = items.filter((i) => i.done).length;
+
+  return (
+    <div>
+      <ProgressBar done={done} total={items.length} accent={accent} />
+      <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+        {items.map((it) => (
+          <div
+            key={it.id}
+            style={{
+              background: "#fff",
+              borderRadius: 14,
+              padding: "12px 14px",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 12,
+              boxShadow: "0 1px 3px rgba(38,43,34,0.06)",
+              opacity: it.done ? 0.6 : 1,
+            }}
+          >
+            <button onClick={() => toggle(it.id)} style={{ border: "none", background: "none", padding: 0, cursor: "pointer", marginTop: 2 }}>
+              <Stamp active={it.done} />
+            </button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontFamily: "'Zen Kaku Gothic New', sans-serif",
+                  fontSize: 14.5,
+                  fontWeight: 600,
+                  color: "#262B22",
+                  textDecoration: it.done ? "line-through" : "none",
+                }}
+              >
+                {it.title}
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
+                {it.deadline && (
+                  <span style={{ fontSize: 11.5, color: accent, background: ACCENTS.money.soft, borderRadius: 6, padding: "2px 7px", fontFamily: "'Zen Kaku Gothic New', sans-serif" }}>
+                    期限: {it.deadline}
+                  </span>
+                )}
+                {it.amount && (
+                  <span style={{ fontSize: 11.5, color: "#5C6355", fontFamily: "'Zen Kaku Gothic New', sans-serif" }}>
+                    {it.amount}
+                  </span>
+                )}
+              </div>
+              {it.memo && (
+                <div style={{ fontSize: 11.5, color: "#9AA192", marginTop: 3, fontFamily: "'Zen Kaku Gothic New', sans-serif" }}>
+                  {it.memo}
+                </div>
+              )}
+            </div>
+            <button onClick={() => remove(it.id)} style={{ border: "none", background: "none", color: "#C9CDC0", cursor: "pointer", padding: 2 }}>
+              <Trash2 size={15} />
+            </button>
+          </div>
+        ))}
+      </div>
+      <AddRow accent={accent} placeholder="申請・お金の項目名" extraField="期限（任意）" onAdd={add} />
+    </div>
+  );
+}
+
+function TodoAddRow({ accent, onAdd }) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [phase, setPhase] = useState(TODO_PHASES[0]);
+
+  const submit = () => {
+    if (!text.trim()) return;
+    onAdd(text.trim(), phase);
+    setText("");
+    setOpen(false);
+  };
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        style={{
+          width: "100%",
+          marginTop: 10,
+          padding: "10px 14px",
+          borderRadius: 12,
+          border: `1.5px dashed ${accent}66`,
+          background: "transparent",
+          color: accent,
+          fontFamily: "'Zen Kaku Gothic New', sans-serif",
+          fontSize: 13,
+          fontWeight: 500,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          cursor: "pointer",
+        }}
+      >
+        <Plus size={15} /> 追加する
+      </button>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        marginTop: 10,
+        padding: 12,
+        borderRadius: 12,
+        background: "#fff",
+        border: `1px solid ${accent}33`,
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+      }}
+    >
+      <input
+        autoFocus
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="やることを入力"
+        style={{
+          border: "none",
+          borderBottom: "1px solid #E4E7DC",
+          padding: "6px 2px",
+          fontFamily: "'Zen Kaku Gothic New', sans-serif",
+          fontSize: 14,
+          outline: "none",
+          background: "transparent",
+          color: "#262B22",
+        }}
+      />
+      <select
+        value={phase}
+        onChange={(e) => setPhase(e.target.value)}
+        style={{
+          border: "1px solid #E4E7DC",
+          borderRadius: 8,
+          padding: "6px 8px",
+          fontFamily: "'Zen Kaku Gothic New', sans-serif",
+          fontSize: 12.5,
+          color: "#5C6355",
+          background: "#FAFAF6",
+        }}
+      >
+        {TODO_PHASES.map((p) => (
+          <option key={p} value={p}>
+            {p}
+          </option>
+        ))}
+      </select>
+      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+        <button
+          onClick={() => setOpen(false)}
+          style={{ border: "none", background: "none", color: "#9AA192", fontSize: 12, cursor: "pointer", padding: "6px 10px" }}
+        >
+          キャンセル
+        </button>
+        <button
+          onClick={submit}
+          style={{
+            border: "none",
+            background: accent,
+            color: "#fff",
+            fontSize: 12,
+            fontWeight: 600,
+            borderRadius: 8,
+            padding: "6px 14px",
+            cursor: "pointer",
+          }}
+        >
+          追加
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function TodoItemRow({ item, accent, onToggle, onRemove, onMemoChange, onPhaseChange }) {
+  const [openMemo, setOpenMemo] = useState(false);
+  const hasMemo = item.memo && item.memo.trim().length > 0;
+
+  return (
+    <div
+      style={{
+        background: "#fff",
+        borderRadius: 14,
+        boxShadow: "0 1px 3px rgba(38,43,34,0.06)",
+        opacity: item.done ? 0.6 : 1,
+        overflow: "hidden",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px" }}>
+        <button onClick={() => onToggle(item.id)} style={{ border: "none", background: "none", padding: 0, cursor: "pointer" }}>
+          <Stamp active={item.done} />
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span
+            style={{
+              fontFamily: "'Zen Kaku Gothic New', sans-serif",
+              fontSize: 14.5,
+              color: "#262B22",
+              textDecoration: item.done ? "line-through" : "none",
+            }}
+          >
+            {item.title}
+          </span>
+          {hasMemo && !openMemo && (
+            <div style={{ fontSize: 11, color: "#B4791F", marginTop: 2, fontFamily: "'Zen Kaku Gothic New', sans-serif" }}>
+              📝 {item.memo}
+            </div>
+          )}
+        </div>
+        <button
+          onClick={() => setOpenMemo((v) => !v)}
+          style={{ border: "none", background: "none", color: hasMemo ? accent : "#C9CDC0", cursor: "pointer", padding: 2, flexShrink: 0 }}
+          aria-label="メモを編集"
+        >
+          <ChevronDown size={16} style={{ transform: openMemo ? "rotate(180deg)" : "none", transition: "transform 0.15s ease" }} />
+        </button>
+        <button onClick={() => onRemove(item.id)} style={{ border: "none", background: "none", color: "#C9CDC0", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+          <Trash2 size={15} />
+        </button>
+      </div>
+      {openMemo && (
+        <div style={{ padding: "0 14px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
+          <textarea
+            value={item.memo}
+            onChange={(e) => onMemoChange(item.id, e.target.value)}
+            placeholder="メモ（病院で言われたこと、持ち物、次にやることなど）"
+            rows={2}
+            style={{
+              border: "1px solid #E4E7DC",
+              borderRadius: 8,
+              padding: "8px 10px",
+              fontFamily: "'Zen Kaku Gothic New', sans-serif",
+              fontSize: 12.5,
+              color: "#3E4238",
+              background: "#FAFAF6",
+              resize: "vertical",
+              outline: "none",
+            }}
+          />
+          <select
+            value={item.phase}
+            onChange={(e) => onPhaseChange(item.id, e.target.value)}
+            style={{
+              border: "1px solid #E4E7DC",
+              borderRadius: 8,
+              padding: "6px 8px",
+              fontFamily: "'Zen Kaku Gothic New', sans-serif",
+              fontSize: 12,
+              color: "#5C6355",
+              background: "#fff",
+              alignSelf: "flex-start",
+            }}
+          >
+            {TODO_PHASES.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TodoTab({ items, setItems }) {
+  const accent = ACCENTS.todo.main;
+  const toggle = (id) => setItems(items.map((it) => (it.id === id ? { ...it, done: !it.done } : it)));
+  const remove = (id) => setItems(items.filter((it) => it.id !== id));
+  const setMemo = (id, memo) => setItems(items.map((it) => (it.id === id ? { ...it, memo } : it)));
+  const setPhase = (id, phase) => setItems(items.map((it) => (it.id === id ? { ...it, phase } : it)));
+  const add = (title, phase) =>
+    setItems([...items, { id: `t${Date.now()}`, title, phase, done: false, memo: "" }]);
+  const done = items.filter((i) => i.done).length;
+
+  return (
+    <div>
+      <ProgressBar done={done} total={items.length} accent={accent} />
+      {TODO_PHASES.map((phase) => {
+        const list = items.filter((i) => i.phase === phase);
+        if (list.length === 0) return null;
+        return (
+          <div key={phase} style={{ marginTop: 18 }}>
+            <div
+              style={{
+                fontFamily: "'Shippori Mincho', serif",
+                fontSize: 13,
+                fontWeight: 700,
+                color: accent,
+                marginBottom: 8,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: accent }} />
+              {phase}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {list.map((it) => (
+                <TodoItemRow
+                  key={it.id}
+                  item={it}
+                  accent={accent}
+                  onToggle={toggle}
+                  onRemove={remove}
+                  onMemoChange={setMemo}
+                  onPhaseChange={setPhase}
+                />
+              ))}
+            </div>
+          </div>
+        );
+      })}
+      <TodoAddRow accent={accent} onAdd={add} />
+    </div>
+  );
+}
+
+function SupplyTab({ items, setItems }) {
+  const accent = ACCENTS.supply.main;
+  const toggle = (id) => setItems(items.map((it) => (it.id === id ? { ...it, done: !it.done } : it)));
+  const remove = (id) => setItems(items.filter((it) => it.id !== id));
+  const add = (title) =>
+    setItems([...items, { id: `s${Date.now()}`, title, category: "その他", done: false }]);
+  const cats = [...new Set(items.map((i) => i.category))];
+  const done = items.filter((i) => i.done).length;
+
+  return (
+    <div>
+      <ProgressBar done={done} total={items.length} accent={accent} />
+      {cats.map((cat) => {
+        const list = items.filter((i) => i.category === cat);
+        return (
+          <div key={cat} style={{ marginTop: 18 }}>
+            <div
+              style={{
+                fontFamily: "'Shippori Mincho', serif",
+                fontSize: 13,
+                fontWeight: 700,
+                color: accent,
+                marginBottom: 8,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: accent }} />
+              {cat}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              {list.map((it) => (
+                <div
+                  key={it.id}
+                  style={{
+                    background: "#fff",
+                    borderRadius: 14,
+                    padding: "10px 12px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    boxShadow: "0 1px 3px rgba(38,43,34,0.06)",
+                    opacity: it.done ? 0.6 : 1,
+                  }}
+                >
+                  <button onClick={() => toggle(it.id)} style={{ border: "none", background: "none", padding: 0, cursor: "pointer", flexShrink: 0 }}>
+                    <Stamp active={it.done} />
+                  </button>
+                  <span
+                    style={{
+                      flex: 1,
+                      fontFamily: "'Zen Kaku Gothic New', sans-serif",
+                      fontSize: 13,
+                      color: "#262B22",
+                      textDecoration: it.done ? "line-through" : "none",
+                    }}
+                  >
+                    {it.title}
+                  </span>
+                  <button onClick={() => remove(it.id)} style={{ border: "none", background: "none", color: "#C9CDC0", cursor: "pointer", padding: 0, flexShrink: 0 }}>
+                    <X size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+      <AddRow accent={accent} placeholder="必需品を追加" onAdd={add} />
+    </div>
+  );
+}
+
+function BrandAvatar({ name, accent, category }) {
+  return (
+    <div
+      style={{
+        width: 46,
+        height: 46,
+        borderRadius: 12,
+        background: `linear-gradient(135deg, ${accent}22, ${accent}0D)`,
+        border: `1.5px solid ${accent}33`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
+      title={`${name}（${category === "stroller" ? "ベビーカー" : "抱っこ紐"}）`}
+    >
+      {category === "stroller" ? (
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <path d="M4 4c4 0 6.5 1.2 7.5 6l1.2 6" stroke={accent} strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M9 10h8.5c1 0 1.5.9 1.1 1.8l-1.3 3A2 2 0 0 1 15.5 16H10" stroke={accent} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="9.5" cy="19" r="1.7" fill={accent} />
+          <circle cx="17" cy="19" r="1.7" fill={accent} />
+        </svg>
+      ) : (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="6.5" r="2.6" stroke={accent} strokeWidth="1.6" />
+          <path d="M6 20c0-3.5 2.8-5.5 6-5.5s6 2 6 5.5" stroke={accent} strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M9 13.5v3.2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-3.2" stroke={accent} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+    </div>
+  );
+}
+
+function CompareCard({ item, accent, category, favorite, onToggleFavorite, bare }) {
+  return (
+    <div
+      style={{
+        background: bare ? "transparent" : "#fff",
+        borderRadius: 14,
+        padding: bare ? "10px 0 0" : "14px 15px",
+        boxShadow: bare ? "none" : favorite ? `0 0 0 1.5px ${accent}` : "0 1px 3px rgba(38,43,34,0.06)",
+        position: "relative",
+      }}
+    >
+      {!bare && (
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <BrandAvatar name={item.name} accent={accent} category={category} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: "'Shippori Mincho', serif", fontSize: 14.5, fontWeight: 700, color: "#262B22" }}>
+              {item.name}
+            </div>
+            <div style={{ fontSize: 11, color: "#9AA192", fontFamily: "'Zen Kaku Gothic New', sans-serif", marginTop: 2 }}>
+              {item.origin}・{item.price}
+            </div>
+          </div>
+          <button
+            onClick={() => onToggleFavorite(item.id)}
+            style={{ border: "none", background: "none", padding: 4, cursor: "pointer", flexShrink: 0 }}
+            aria-label="気になるに追加"
+          >
+            <Star size={20} color={favorite ? "#E0A83A" : "#D8DBCF"} fill={favorite ? "#E0A83A" : "none"} />
+          </button>
+        </div>
+      )}
+
+      <div style={{ marginTop: 10, display: "flex", gap: 6, alignItems: "flex-start" }}>
+        <ThumbsUp size={13} color={accent} style={{ marginTop: 2, flexShrink: 0 }} />
+        <ul style={{ margin: 0, paddingLeft: 14, fontSize: 12.5, color: "#3E4238", fontFamily: "'Zen Kaku Gothic New', sans-serif", lineHeight: 1.6 }}>
+          {item.pros.map((p, i) => (
+            <li key={i}>{p}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div style={{ marginTop: 6, display: "flex", gap: 6, alignItems: "flex-start" }}>
+        <ThumbsDown size={13} color="#B08A6A" style={{ marginTop: 2, flexShrink: 0 }} />
+        <ul style={{ margin: 0, paddingLeft: 14, fontSize: 12.5, color: "#5C6355", fontFamily: "'Zen Kaku Gothic New', sans-serif", lineHeight: 1.6 }}>
+          {item.cons.map((c, i) => (
+            <li key={i}>{c}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div
+        style={{
+          marginTop: 8,
+          background: ACCENTS.compare.soft,
+          borderRadius: 10,
+          padding: "9px 10px",
+        }}
+      >
+        <div style={{ display: "flex", gap: 6, alignItems: "flex-start", marginBottom: item.reviews?.length ? 6 : 0 }}>
+          <MessageCircle size={13} color={accent} style={{ marginTop: 2, flexShrink: 0 }} />
+          <span style={{ fontSize: 12, color: "#4A4E70", fontFamily: "'Zen Kaku Gothic New', sans-serif", lineHeight: 1.6, fontWeight: 600 }}>
+            {item.sns}
+          </span>
+        </div>
+        {item.reviews && item.reviews.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 5, paddingLeft: 19 }}>
+            {item.reviews.map((r, i) => (
+              <div key={i} style={{ fontSize: 11.5, color: "#5C5F80", fontFamily: "'Zen Kaku Gothic New', sans-serif", lineHeight: 1.6 }}>
+                <span style={{ color: accent, fontWeight: 600 }}>{r.source}｜</span>
+                {r.text}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CompareTab({ favorites, onToggleFavorite }) {
+  const [category, setCategory] = useState("stroller");
+  const [view, setView] = useState("card"); // "card" | "list"
+  const [expanded, setExpanded] = useState(() => new Set());
+  const accent = ACCENTS.compare.main;
+  const rawData = category === "stroller" ? strollerData : carrierData;
+
+  const toggleFavorite = (id) => onToggleFavorite(id);
+
+  const toggleExpanded = (id) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const data = [...rawData].sort((a, b) => {
+    const fa = favorites.has(a.id) ? 1 : 0;
+    const fb = favorites.has(b.id) ? 1 : 0;
+    return fb - fa;
+  });
+
+  const favoriteCount = rawData.filter((d) => favorites.has(d.id)).length;
+
+  return (
+    <div>
+      <div
+        style={{
+          fontSize: 11.5,
+          color: "#7A8072",
+          background: "#fff",
+          borderRadius: 10,
+          padding: "8px 12px",
+          marginBottom: 12,
+          lineHeight: 1.6,
+        }}
+      >
+        比較サイトや口コミ・SNS上の傾向をまとめたものです（特定の投稿の引用ではありません）。価格や仕様は変わるので、購入前に公式サイトや最新レビューもあわせて確認してください。星マークで「気になる」を付けると一覧の上位に表示されます。
+      </div>
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+        {[
+          { key: "stroller", label: `ベビーカー（${strollerData.length}）` },
+          { key: "carrier", label: `抱っこ紐（${carrierData.length}）` },
+        ].map(({ key, label }) => {
+          const active = category === key;
+          return (
+            <button
+              key={key}
+              onClick={() => setCategory(key)}
+              style={{
+                flex: 1,
+                border: `1.5px solid ${active ? accent : "#E4E7DC"}`,
+                borderRadius: 10,
+                padding: "8px 6px",
+                background: active ? accent : "#fff",
+                color: active ? "#fff" : "#5C6355",
+                fontSize: 12.5,
+                fontWeight: 600,
+                cursor: "pointer",
+                fontFamily: "'Zen Kaku Gothic New', sans-serif",
+              }}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+        <div style={{ display: "flex", background: "#E4E7DC55", borderRadius: 8, padding: 2 }}>
+          {[
+            { key: "card", label: "カード表示" },
+            { key: "list", label: "名前だけ" },
+          ].map(({ key, label }) => {
+            const active = view === key;
+            return (
+              <button
+                key={key}
+                onClick={() => setView(key)}
+                style={{
+                  border: "none",
+                  borderRadius: 7,
+                  padding: "5px 10px",
+                  background: active ? "#fff" : "transparent",
+                  color: active ? "#262B22" : "#8A8F7E",
+                  fontSize: 11.5,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  fontFamily: "'Zen Kaku Gothic New', sans-serif",
+                  boxShadow: active ? "0 1px 2px rgba(38,43,34,0.1)" : "none",
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {favoriteCount > 0 && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            marginBottom: 10,
+            fontSize: 12,
+            color: "#8A6A1F",
+            fontFamily: "'Zen Kaku Gothic New', sans-serif",
+          }}
+        >
+          <Star size={13} color="#E0A83A" fill="#E0A83A" />
+          気になる：{favoriteCount}件を上位に表示中
+        </div>
+      )}
+
+      {view === "card" ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {data.map((item) => (
+            <CompareCard
+              key={item.id}
+              item={item}
+              accent={accent}
+              category={category}
+              favorite={favorites.has(item.id)}
+              onToggleFavorite={toggleFavorite}
+            />
+          ))}
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {data.map((item) => {
+            const isOpen = expanded.has(item.id);
+            return (
+              <div key={item.id} style={{ background: "#fff", borderRadius: 12, overflow: "hidden" }}>
+                <button
+                  onClick={() => toggleExpanded(item.id)}
+                  style={{
+                    width: "100%",
+                    border: "none",
+                    background: "transparent",
+                    padding: "11px 12px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    cursor: "pointer",
+                    textAlign: "left",
+                  }}
+                >
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(item.id);
+                    }}
+                    style={{ border: "none", background: "none", padding: 0, cursor: "pointer", flexShrink: 0 }}
+                  >
+                    <Star
+                      size={16}
+                      color={favorites.has(item.id) ? "#E0A83A" : "#D8DBCF"}
+                      fill={favorites.has(item.id) ? "#E0A83A" : "none"}
+                    />
+                  </button>
+                  <span style={{ flex: 1, fontFamily: "'Zen Kaku Gothic New', sans-serif", fontSize: 13.5, fontWeight: 600, color: "#262B22" }}>
+                    {item.name}
+                  </span>
+                  <span style={{ fontSize: 11, color: "#9AA192", fontFamily: "'Zen Kaku Gothic New', sans-serif" }}>{item.price}</span>
+                  <ChevronDown
+                    size={15}
+                    color="#B7BBA9"
+                    style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s ease", flexShrink: 0 }}
+                  />
+                </button>
+                {isOpen && (
+                  <div style={{ padding: "0 12px 14px" }}>
+                    <CompareCard
+                      item={item}
+                      accent={accent}
+                      category={category}
+                      favorite={favorites.has(item.id)}
+                      onToggleFavorite={toggleFavorite}
+                      bare
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── データの保存先：無料のFirebase（プロジェクト: ninsinapp）を使い、
+// 夫婦間でリアルタイムに近い形で共有します。Claudeの課金状況とは無関係に動きます。
+const FIREBASE_ROOM = "our-family"; // 二人だけの合言葉に変えたい場合はここを書き換えてください
+const docRef = firebase.firestore().collection("sodate-note").doc(FIREBASE_ROOM);
+
+function SodateNote() {
+  const [tab, setTab] = useState("money");
+  const [money, setMoney] = useState(initialMoney);
+  const [todo, setTodo] = useState(initialTodo);
+  const [supply, setSupply] = useState(initialSupply);
+  const [favorites, setFavorites] = useState(() => new Set());
+  const [syncState, setSyncState] = useState("loading"); // loading | synced | saving | error
+  const [firebaseError, setFirebaseError] = useState("");
+  const loadedRef = React.useRef(false);
+  const lastWrittenRef = React.useRef("");
+
+  const applyPayload = (parsed) => {
+    if (!parsed) return;
+    if (parsed.money) setMoney(parsed.money);
+    if (parsed.todo) setTodo(parsed.todo);
+    if (parsed.supply) setSupply(parsed.supply);
+    if (parsed.favorites) setFavorites(new Set(parsed.favorites));
+  };
+
+  // リアルタイム購読：自分か夫がどちらかで変更すると、両方の画面が自動的に更新される
+  React.useEffect(() => {
+    const unsubscribe = docRef.onSnapshot(
+      (snap) => {
+        const raw = snap.exists ? snap.data().payload : null;
+        if (raw && raw !== lastWrittenRef.current) {
+          try {
+            applyPayload(JSON.parse(raw));
+          } catch (e) {
+            // 壊れたデータは無視
+          }
+        }
+        setSyncState("synced");
+        setFirebaseError("");
+        loadedRef.current = true;
+      },
+      (err) => {
+        setSyncState("error");
+        setFirebaseError(String(err && err.message ? err.message : err));
+        loadedRef.current = true;
+      }
+    );
+    return () => unsubscribe();
+  }, []);
+
+  // 変更のたびにFirestoreへ保存
+  React.useEffect(() => {
+    if (!loadedRef.current) return;
+    const payload = JSON.stringify({ money, todo, supply, favorites: [...favorites] });
+    if (payload === lastWrittenRef.current) return;
+    lastWrittenRef.current = payload;
+    setSyncState("saving");
+    docRef
+      .set({ payload }, { merge: true })
+      .then(() => setSyncState("synced"))
+      .catch((err) => {
+        setSyncState("error");
+        setFirebaseError(String(err && err.message ? err.message : err));
+      });
+  }, [money, todo, supply, favorites]);
+
+  const toggleFavorite = (id) => {
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const tabs = [
+    { key: "money", label: "お金", icon: Wallet },
+    { key: "todo", label: "やること", icon: ListChecks },
+    { key: "supply", label: "必需品", icon: Package },
+    { key: "compare", label: "検討比較", icon: Scale },
+  ];
+
+  const syncLabel = {
+    loading: "読み込み中…",
+    saving: "保存中…",
+    synced: "夫婦で共有中（無料・永続）",
+    error: "保存に失敗しました",
+    local: "この端末だけに保存（未設定）",
+  }[syncState];
+
+  const syncColor = {
+    loading: "#9AA192",
+    saving: "#9AA192",
+    synced: "#5B8A6B",
+    error: "#B23A48",
+    local: "#B4791F",
+  }[syncState];
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#EDF0E6",
+        display: "flex",
+        justifyContent: "center",
+        fontFamily: "'Zen Kaku Gothic New', sans-serif",
+      }}
+    >
+      <div style={{ width: "100%", maxWidth: 420, minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative" }}>
+        {/* header */}
+        <div style={{ padding: "28px 20px 16px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ fontFamily: "'Shippori Mincho', serif", fontSize: 19, fontWeight: 700, color: "#262B22", lineHeight: 1.3 }}>
+              妊娠・出産サポート
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                fontSize: 10.5,
+                color: syncColor,
+                fontFamily: "'Zen Kaku Gothic New', sans-serif",
+              }}
+            >
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: syncColor,
+                  display: "inline-block",
+                }}
+              />
+              {syncLabel}
+            </div>
+          </div>
+          <div style={{ fontSize: 12.5, color: "#7A8072", marginTop: 4 }}>
+            妊娠・育児の申請とやることを、ひとつのノートに。
+          </div>
+          {firebaseError && (
+            <div
+              style={{
+                fontSize: 10.5,
+                color: "#B23A48",
+                marginTop: 6,
+                background: "#F3E3E6",
+                borderRadius: 6,
+                padding: "4px 8px",
+                fontFamily: "monospace",
+                wordBreak: "break-all",
+              }}
+            >
+              Firebase接続エラー: {firebaseError}
+            </div>
+          )}
+        </div>
+
+        {/* tab pill switcher */}
+        <div style={{ padding: "0 20px", display: "flex", gap: 8, marginBottom: 6 }}>
+          {tabs.map(({ key, label, icon: Icon }) => {
+            const active = tab === key;
+            const accent = ACCENTS[key].main;
+            return (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                style={{
+                  flex: 1,
+                  border: "none",
+                  borderRadius: 12,
+                  padding: "9px 3px",
+                  background: active ? accent : "#fff",
+                  color: active ? "#fff" : "#5C6355",
+                  fontSize: 10.5,
+                  fontWeight: 600,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 4,
+                  whiteSpace: "nowrap",
+                  cursor: "pointer",
+                  boxShadow: active ? `0 3px 10px ${accent}55` : "0 1px 3px rgba(38,43,34,0.05)",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <Icon size={16} />
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* content */}
+        <div style={{ flex: 1, padding: "14px 20px 100px", overflowY: "auto" }}>
+          <div
+            style={{
+              fontFamily: "'Shippori Mincho', serif",
+              fontSize: 15,
+              fontWeight: 700,
+              color: ACCENTS[tab].main,
+              marginBottom: 12,
+            }}
+          >
+            {ACCENTS[tab].label}
+          </div>
+          {tab === "money" && <MoneyTab items={money} setItems={setMoney} />}
+          {tab === "todo" && <TodoTab items={todo} setItems={setTodo} />}
+          {tab === "supply" && <SupplyTab items={supply} setItems={setSupply} />}
+          {tab === "compare" && <CompareTab favorites={favorites} onToggleFavorite={toggleFavorite} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+const rootEl = document.getElementById("root");
+const root = ReactDOM.createRoot(rootEl);
+root.render(<SodateNote />);
+
+</script>
+</body>
+</html>
