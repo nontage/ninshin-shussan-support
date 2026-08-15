@@ -123,6 +123,13 @@ const MessageCircle = makeIcon(
 const Star = makeIcon(
   <polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9" />
 );
+const Briefcase = makeIcon(
+  <>
+    <rect x="2" y="7" width="20" height="14" rx="2" />
+    <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    <path d="M2 13h20" />
+  </>
+);
 
 
 const FONT_LINK_ID = "sodate-note-fonts";
@@ -139,6 +146,7 @@ const ACCENTS = {
   money: { main: "#A8455C", soft: "#F3E3E6", label: "お金・申請" },
   todo: { main: "#B4791F", soft: "#F3EAD6", label: "やること" },
   supply: { main: "#3E6C86", soft: "#DFE8EC", label: "必需品" },
+  bags: { main: "#7A6C9E", soft: "#EAE6F2", label: "バッグ" },
   compare: { main: "#5B5FA8", soft: "#E5E5F2", label: "検討比較" },
 };
 
@@ -372,30 +380,1954 @@ const initialMoney = [
   { id: "m6", title: "高額療養費・医療費控除", deadline: "確定申告時", amount: "", memo: "帝王切開など高額時は要確認", done: false },
 ];
 
-const TODO_PHASES = ["妊娠初期（〜15週）", "妊娠中期（16〜27週）", "妊娠後期（28週〜）", "産後（〜1か月）", "産後（1か月〜）"];
+// ===== 妊娠・出産・育児 準備マスターデータ =====
+const ENUM_TARGET = {
+  "mother": "母親",
+  "baby": "赤ちゃん",
+  "shared": "共通"
+};
 
-const initialTodo = [
-  { id: "t1", title: "産院・分娩方法を決める", phase: "妊娠初期（〜15週）", done: true, memo: "" },
-  { id: "t2", title: "両親学級に参加する", phase: "妊娠中期（16〜27週）", done: false, memo: "" },
-  { id: "t3", title: "入院バッグを準備する", phase: "妊娠後期（28週〜）", done: false, memo: "" },
-  { id: "t4", title: "里帰り出産の相談・調整", phase: "妊娠中期（16〜27週）", done: false, memo: "" },
-  { id: "t5", title: "保育園の情報収集を始める", phase: "妊娠中期（16〜27週）", done: false, memo: "" },
-  { id: "t6", title: "出生届を提出する", phase: "産後（〜1か月）", done: false, memo: "" },
-  { id: "t7", title: "健康保険への加入手続き", phase: "産後（〜1か月）", done: false, memo: "" },
-  { id: "t8", title: "1か月健診の予約", phase: "産後（1か月〜）", done: false, memo: "" },
+const ENUM_PRIORITY = {
+  "essential": "必須",
+  "recommended": "推奨",
+  "optional": "あると便利",
+  "later": "必要になってから"
+};
+
+const ENUM_STATUS = {
+  "not_started": "未確認",
+  "considering": "検討中",
+  "to_buy": "購入予定",
+  "purchased": "購入済み",
+  "washed": "洗濯済み",
+  "installed": "設置済み",
+  "prepared": "準備済み",
+  "packed": "バッグ収納済み",
+  "not_needed": "不要"
+};
+
+const ENUM_PURCHASE_TIMING = {
+  "now": "今",
+  "early_pregnancy": "妊娠初期",
+  "middle_pregnancy": "妊娠中期",
+  "late_pregnancy": "妊娠後期",
+  "before_28_weeks": "28週まで",
+  "before_32_weeks": "32週まで",
+  "before_34_weeks": "34週まで",
+  "before_36_weeks": "36週まで",
+  "before_birth": "出産前",
+  "after_birth": "出産後",
+  "when_needed": "必要になってから",
+  "before_weaning": "離乳食開始前",
+  "before_rolling": "寝返り開始前",
+  "before_crawling": "ハイハイ開始前"
+};
+
+const MASTER_STAGES = [
+  {
+    "id": "pregnancy_early",
+    "name": "妊娠初期"
+  },
+  {
+    "id": "pregnancy_middle",
+    "name": "妊娠中期"
+  },
+  {
+    "id": "pregnancy_late",
+    "name": "妊娠後期"
+  },
+  {
+    "id": "prenatal_hospital",
+    "name": "産前入院"
+  },
+  {
+    "id": "postpartum_hospital",
+    "name": "産後入院"
+  },
+  {
+    "id": "postpartum_care",
+    "name": "産後ケア"
+  },
+  {
+    "id": "newborn",
+    "name": "新生児期"
+  },
+  {
+    "id": "infant_0_3",
+    "name": "乳児期 0〜3か月"
+  },
+  {
+    "id": "infant_3_6",
+    "name": "乳児期 3〜6か月"
+  },
+  {
+    "id": "infant_6_12",
+    "name": "乳児期 6〜12か月"
+  }
 ];
 
-const initialSupply = [
-  { id: "s1", title: "新生児用肌着・ウェア", category: "衣類", done: false },
-  { id: "s2", title: "おむつ・おしりふき", category: "衣類", done: false },
-  { id: "s3", title: "ベビーバス・沐浴グッズ", category: "衣類", done: false },
-  { id: "s4", title: "哺乳瓶・粉ミルク", category: "授乳", done: false },
-  { id: "s5", title: "チャイルドシート", category: "外出", done: false },
-  { id: "s6", title: "ベビーカー", category: "外出", done: false },
-  { id: "s7", title: "抱っこ紐", category: "外出", done: false },
-  { id: "s8", title: "ベビーベッド・寝具", category: "寝具", done: false },
+const MASTER_CATEGORIES = [
+  {
+    "id": "documents",
+    "name": "書類"
+  },
+  {
+    "id": "maternity_clothing",
+    "name": "マタニティ衣類"
+  },
+  {
+    "id": "hospital_clothing",
+    "name": "入院衣類"
+  },
+  {
+    "id": "postpartum_recovery",
+    "name": "産後回復"
+  },
+  {
+    "id": "morning_sickness",
+    "name": "つわり対策"
+  },
+  {
+    "id": "breastfeeding",
+    "name": "授乳"
+  },
+  {
+    "id": "baby_clothing",
+    "name": "赤ちゃん衣類"
+  },
+  {
+    "id": "sleep",
+    "name": "睡眠"
+  },
+  {
+    "id": "diaper",
+    "name": "おむつ"
+  },
+  {
+    "id": "feeding",
+    "name": "ミルク・授乳"
+  },
+  {
+    "id": "bath",
+    "name": "お風呂"
+  },
+  {
+    "id": "baby_care",
+    "name": "赤ちゃんケア"
+  },
+  {
+    "id": "transport",
+    "name": "移動"
+  },
+  {
+    "id": "hospital",
+    "name": "入院"
+  },
+  {
+    "id": "labor",
+    "name": "陣痛"
+  },
+  {
+    "id": "hygiene",
+    "name": "衛生用品"
+  },
+  {
+    "id": "electronics",
+    "name": "電子機器"
+  },
+  {
+    "id": "postpartum_care",
+    "name": "産後ケア"
+  },
+  {
+    "id": "outing",
+    "name": "外出"
+  },
+  {
+    "id": "play",
+    "name": "遊び"
+  },
+  {
+    "id": "weaning",
+    "name": "離乳食"
+  },
+  {
+    "id": "safety",
+    "name": "安全対策"
+  },
+  {
+    "id": "household",
+    "name": "生活・家事"
+  }
 ];
 
+const MASTER_ITEMS = [
+  {
+    "id": "mother_health_handbook",
+    "name": "母子健康手帳",
+    "target": "mother",
+    "category": "documents",
+    "stages": [
+      "pregnancy_early",
+      "pregnancy_middle",
+      "pregnancy_late",
+      "prenatal_hospital",
+      "postpartum_hospital",
+      "postpartum_care",
+      "newborn"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "冊",
+    "purchaseTiming": "now",
+    "bagTags": [
+      "hospital_bag",
+      "labor_bag",
+      "postpartum_care_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": "妊婦健診や入院、産後の健診などで使用する。"
+  },
+  {
+    "id": "prenatal_checkup_tickets",
+    "name": "妊婦健診受診票",
+    "target": "mother",
+    "category": "documents",
+    "stages": [
+      "pregnancy_early",
+      "pregnancy_middle",
+      "pregnancy_late"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "式",
+    "purchaseTiming": "now",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": "自治体から交付されたものを管理する。"
+  },
+  {
+    "id": "health_insurance",
+    "name": "マイナ保険証・健康保険証",
+    "target": "mother",
+    "category": "documents",
+    "stages": [
+      "pregnancy_early",
+      "pregnancy_middle",
+      "pregnancy_late",
+      "prenatal_hospital",
+      "postpartum_hospital",
+      "postpartum_care"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "点",
+    "purchaseTiming": "now",
+    "bagTags": [
+      "hospital_bag",
+      "labor_bag",
+      "postpartum_care_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "hospital_card",
+    "name": "病院の診察券",
+    "target": "mother",
+    "category": "documents",
+    "stages": [
+      "pregnancy_early",
+      "pregnancy_middle",
+      "pregnancy_late",
+      "prenatal_hospital",
+      "postpartum_hospital"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "枚",
+    "purchaseTiming": "now",
+    "bagTags": [
+      "hospital_bag",
+      "labor_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "medicine_notebook",
+    "name": "お薬手帳",
+    "target": "mother",
+    "category": "documents",
+    "stages": [
+      "pregnancy_early",
+      "pregnancy_middle",
+      "pregnancy_late",
+      "prenatal_hospital",
+      "postpartum_hospital"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "冊",
+    "purchaseTiming": "now",
+    "bagTags": [
+      "hospital_bag",
+      "labor_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "mother_water_bottle",
+    "name": "水筒・飲み物ボトル",
+    "target": "mother",
+    "category": "morning_sickness",
+    "stages": [
+      "pregnancy_early",
+      "pregnancy_middle",
+      "pregnancy_late",
+      "prenatal_hospital",
+      "postpartum_hospital",
+      "newborn"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "個",
+    "purchaseTiming": "now",
+    "bagTags": [
+      "labor_bag",
+      "hospital_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "nausea_bags",
+    "name": "吐き気対策用袋",
+    "target": "mother",
+    "category": "morning_sickness",
+    "stages": [
+      "pregnancy_early"
+    ],
+    "priority": "recommended",
+    "quantityMin": 3,
+    "quantityMax": 10,
+    "unit": "枚",
+    "purchaseTiming": "now",
+    "bagTags": [],
+    "conditional": true,
+    "condition": "つわりがある場合",
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "jelly_drink",
+    "name": "ゼリー飲料",
+    "target": "mother",
+    "category": "morning_sickness",
+    "stages": [
+      "pregnancy_early",
+      "prenatal_hospital"
+    ],
+    "priority": "optional",
+    "quantityMin": 1,
+    "quantityMax": 5,
+    "unit": "個",
+    "purchaseTiming": "when_needed",
+    "bagTags": [
+      "labor_bag"
+    ],
+    "conditional": true,
+    "condition": "食欲低下や陣痛時の補食として必要な場合",
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "non_wire_bra",
+    "name": "ノンワイヤーブラ",
+    "target": "mother",
+    "category": "maternity_clothing",
+    "stages": [
+      "pregnancy_early",
+      "pregnancy_middle",
+      "pregnancy_late"
+    ],
+    "priority": "recommended",
+    "quantityMin": 2,
+    "quantityMax": 4,
+    "unit": "枚",
+    "purchaseTiming": "middle_pregnancy",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "maternity_shorts",
+    "name": "マタニティショーツ",
+    "target": "mother",
+    "category": "maternity_clothing",
+    "stages": [
+      "pregnancy_middle",
+      "pregnancy_late"
+    ],
+    "priority": "recommended",
+    "quantityMin": 3,
+    "quantityMax": 5,
+    "unit": "枚",
+    "purchaseTiming": "middle_pregnancy",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "nursing_bra",
+    "name": "授乳ブラ",
+    "target": "mother",
+    "category": "breastfeeding",
+    "stages": [
+      "pregnancy_middle",
+      "pregnancy_late",
+      "postpartum_hospital",
+      "postpartum_care",
+      "newborn",
+      "infant_0_3",
+      "infant_3_6"
+    ],
+    "priority": "essential",
+    "quantityMin": 3,
+    "quantityMax": 4,
+    "unit": "枚",
+    "purchaseTiming": "middle_pregnancy",
+    "bagTags": [
+      "hospital_bag",
+      "postpartum_care_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "maternity_pants",
+    "name": "マタニティパンツ",
+    "target": "mother",
+    "category": "maternity_clothing",
+    "stages": [
+      "pregnancy_middle",
+      "pregnancy_late"
+    ],
+    "priority": "optional",
+    "quantityMin": 1,
+    "quantityMax": 2,
+    "unit": "本",
+    "purchaseTiming": "middle_pregnancy",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "maternity_dress",
+    "name": "ゆったりしたワンピース",
+    "target": "mother",
+    "category": "maternity_clothing",
+    "stages": [
+      "pregnancy_middle",
+      "pregnancy_late"
+    ],
+    "priority": "optional",
+    "quantityMin": 2,
+    "quantityMax": 3,
+    "unit": "着",
+    "purchaseTiming": "middle_pregnancy",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "maternity_leggings",
+    "name": "マタニティレギンス",
+    "target": "mother",
+    "category": "maternity_clothing",
+    "stages": [
+      "pregnancy_middle",
+      "pregnancy_late"
+    ],
+    "priority": "optional",
+    "quantityMin": 1,
+    "quantityMax": 2,
+    "unit": "本",
+    "purchaseTiming": "middle_pregnancy",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "body_pillow",
+    "name": "抱き枕",
+    "target": "mother",
+    "category": "maternity_clothing",
+    "stages": [
+      "pregnancy_middle",
+      "pregnancy_late"
+    ],
+    "priority": "optional",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "個",
+    "purchaseTiming": "middle_pregnancy",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": "授乳クッション兼用タイプでもよい。"
+  },
+  {
+    "id": "front_open_pajamas",
+    "name": "前開きパジャマ",
+    "target": "mother",
+    "category": "hospital_clothing",
+    "stages": [
+      "pregnancy_late",
+      "prenatal_hospital",
+      "postpartum_hospital",
+      "postpartum_care",
+      "newborn"
+    ],
+    "priority": "essential",
+    "quantityMin": 2,
+    "quantityMax": 3,
+    "unit": "着",
+    "purchaseTiming": "before_32_weeks",
+    "bagTags": [
+      "hospital_bag",
+      "postpartum_care_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": "授乳しやすい前開きタイプ。"
+  },
+  {
+    "id": "postpartum_shorts",
+    "name": "産褥ショーツ",
+    "target": "mother",
+    "category": "hospital_clothing",
+    "stages": [
+      "pregnancy_late",
+      "prenatal_hospital",
+      "postpartum_hospital",
+      "newborn"
+    ],
+    "priority": "essential",
+    "quantityMin": 2,
+    "quantityMax": 4,
+    "unit": "枚",
+    "purchaseTiming": "before_32_weeks",
+    "bagTags": [
+      "hospital_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": "病院から提供される場合がある。",
+    "providedByHospitalPossible": true
+  },
+  {
+    "id": "postpartum_pads",
+    "name": "産褥パッド",
+    "target": "mother",
+    "category": "postpartum_recovery",
+    "stages": [
+      "pregnancy_late",
+      "postpartum_hospital",
+      "newborn"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 2,
+    "unit": "パック",
+    "purchaseTiming": "before_34_weeks",
+    "bagTags": [
+      "hospital_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": "病院の出産セットに含まれる場合がある。",
+    "providedByHospitalPossible": true
+  },
+  {
+    "id": "night_sanitary_pads",
+    "name": "夜用ナプキン",
+    "target": "mother",
+    "category": "postpartum_recovery",
+    "stages": [
+      "postpartum_hospital",
+      "newborn"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 2,
+    "unit": "パック",
+    "purchaseTiming": "before_birth",
+    "bagTags": [
+      "hospital_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "breast_pads",
+    "name": "母乳パッド",
+    "target": "mother",
+    "category": "breastfeeding",
+    "stages": [
+      "pregnancy_late",
+      "postpartum_hospital",
+      "postpartum_care",
+      "newborn",
+      "infant_0_3",
+      "infant_3_6"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 2,
+    "unit": "パック",
+    "purchaseTiming": "before_birth",
+    "bagTags": [
+      "hospital_bag",
+      "postpartum_care_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "nursing_pillow",
+    "name": "授乳クッション",
+    "target": "mother",
+    "category": "breastfeeding",
+    "stages": [
+      "pregnancy_middle",
+      "pregnancy_late",
+      "postpartum_hospital",
+      "postpartum_care",
+      "newborn",
+      "infant_0_3"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "個",
+    "purchaseTiming": "before_birth",
+    "bagTags": [
+      "hospital_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "breast_pump",
+    "name": "搾乳器",
+    "target": "mother",
+    "category": "breastfeeding",
+    "stages": [
+      "postpartum_hospital",
+      "newborn",
+      "infant_0_3",
+      "infant_3_6"
+    ],
+    "priority": "later",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "個",
+    "purchaseTiming": "when_needed",
+    "bagTags": [],
+    "purchaseCaution": true,
+    "notes": "母乳量や授乳状況を確認してから購入でもよい。"
+  },
+  {
+    "id": "breastmilk_storage_bags",
+    "name": "母乳保存バッグ",
+    "target": "mother",
+    "category": "breastfeeding",
+    "stages": [
+      "newborn",
+      "infant_0_3",
+      "infant_3_6"
+    ],
+    "priority": "later",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "箱",
+    "purchaseTiming": "when_needed",
+    "bagTags": [],
+    "purchaseCaution": true,
+    "notes": ""
+  },
+  {
+    "id": "nipple_shield",
+    "name": "乳頭保護器",
+    "target": "mother",
+    "category": "breastfeeding",
+    "stages": [
+      "postpartum_hospital",
+      "newborn",
+      "infant_0_3"
+    ],
+    "priority": "later",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "個",
+    "purchaseTiming": "when_needed",
+    "bagTags": [],
+    "purchaseCaution": true,
+    "notes": "必要性を産後に判断する。"
+  },
+  {
+    "id": "donut_cushion",
+    "name": "円座クッション",
+    "target": "mother",
+    "category": "postpartum_recovery",
+    "stages": [
+      "postpartum_hospital",
+      "postpartum_care",
+      "newborn"
+    ],
+    "priority": "optional",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "個",
+    "purchaseTiming": "when_needed",
+    "bagTags": [
+      "hospital_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "long_charging_cable",
+    "name": "長い充電ケーブル",
+    "target": "mother",
+    "category": "electronics",
+    "stages": [
+      "prenatal_hospital",
+      "postpartum_hospital",
+      "postpartum_care"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "本",
+    "purchaseTiming": "before_32_weeks",
+    "bagTags": [
+      "labor_bag",
+      "hospital_bag",
+      "postpartum_care_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "mobile_battery",
+    "name": "モバイルバッテリー",
+    "target": "mother",
+    "category": "electronics",
+    "stages": [
+      "prenatal_hospital",
+      "postpartum_hospital"
+    ],
+    "priority": "optional",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "個",
+    "purchaseTiming": "before_34_weeks",
+    "bagTags": [
+      "labor_bag",
+      "hospital_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "pet_bottle_straw",
+    "name": "ペットボトル用ストロー",
+    "target": "mother",
+    "category": "labor",
+    "stages": [
+      "prenatal_hospital",
+      "postpartum_hospital"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "個",
+    "purchaseTiming": "before_34_weeks",
+    "bagTags": [
+      "labor_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "tennis_ball",
+    "name": "テニスボール",
+    "target": "mother",
+    "category": "labor",
+    "stages": [
+      "prenatal_hospital"
+    ],
+    "priority": "optional",
+    "quantityMin": 1,
+    "quantityMax": 2,
+    "unit": "個",
+    "purchaseTiming": "before_34_weeks",
+    "bagTags": [
+      "labor_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": "陣痛時の圧迫用。病院の方針も確認する。"
+  },
+  {
+    "id": "baby_sleep_space",
+    "name": "赤ちゃん専用寝床",
+    "target": "baby",
+    "category": "sleep",
+    "stages": [
+      "pregnancy_middle",
+      "pregnancy_late",
+      "newborn",
+      "infant_0_3",
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "か所",
+    "purchaseTiming": "before_32_weeks",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": "",
+    "safetyNotes": [
+      "赤ちゃん専用の安全な睡眠スペースを用意する。",
+      "柔らかい物や不要な物を寝床に置かない。"
+    ]
+  },
+  {
+    "id": "baby_firm_mattress",
+    "name": "硬く平坦なベビー用マットレス・敷布団",
+    "target": "baby",
+    "category": "sleep",
+    "stages": [
+      "pregnancy_middle",
+      "pregnancy_late",
+      "newborn",
+      "infant_0_3",
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "枚",
+    "purchaseTiming": "before_32_weeks",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": "",
+    "safetyNotes": [
+      "硬く平坦な寝具を使用する。"
+    ]
+  },
+  {
+    "id": "fitted_sheet",
+    "name": "フィッティングシーツ",
+    "target": "baby",
+    "category": "sleep",
+    "stages": [
+      "pregnancy_middle",
+      "pregnancy_late",
+      "newborn",
+      "infant_0_3"
+    ],
+    "priority": "essential",
+    "quantityMin": 2,
+    "quantityMax": 3,
+    "unit": "枚",
+    "purchaseTiming": "before_32_weeks",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "waterproof_sheet",
+    "name": "防水シーツ",
+    "target": "baby",
+    "category": "sleep",
+    "stages": [
+      "pregnancy_middle",
+      "pregnancy_late",
+      "newborn",
+      "infant_0_3"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 2,
+    "unit": "枚",
+    "purchaseTiming": "before_32_weeks",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "sleep_sack",
+    "name": "スリーパー",
+    "target": "baby",
+    "category": "sleep",
+    "stages": [
+      "pregnancy_late",
+      "newborn",
+      "infant_0_3",
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 2,
+    "unit": "枚",
+    "purchaseTiming": "before_birth",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": "季節や室温に合わせて使用する。"
+  },
+  {
+    "id": "newborn_bodysuits",
+    "name": "新生児用肌着",
+    "target": "baby",
+    "category": "baby_clothing",
+    "stages": [
+      "pregnancy_late",
+      "postpartum_hospital",
+      "newborn",
+      "infant_0_3"
+    ],
+    "priority": "essential",
+    "quantityMin": 5,
+    "quantityMax": 6,
+    "unit": "枚",
+    "purchaseTiming": "before_32_weeks",
+    "bagTags": [
+      "discharge_bag"
+    ],
+    "purchaseCaution": true,
+    "notes": "新生児サイズは着用期間が短い可能性があるため大量購入しない。"
+  },
+  {
+    "id": "baby_coveralls",
+    "name": "カバーオール",
+    "target": "baby",
+    "category": "baby_clothing",
+    "stages": [
+      "pregnancy_late",
+      "postpartum_hospital",
+      "newborn",
+      "infant_0_3"
+    ],
+    "priority": "essential",
+    "quantityMin": 3,
+    "quantityMax": 5,
+    "unit": "枚",
+    "purchaseTiming": "before_32_weeks",
+    "bagTags": [
+      "discharge_bag"
+    ],
+    "purchaseCaution": true,
+    "notes": ""
+  },
+  {
+    "id": "baby_discharge_clothes",
+    "name": "赤ちゃんの退院着",
+    "target": "baby",
+    "category": "baby_clothing",
+    "stages": [
+      "pregnancy_late",
+      "postpartum_hospital"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "セット",
+    "purchaseTiming": "before_34_weeks",
+    "bagTags": [
+      "discharge_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "gauze_cloths",
+    "name": "ガーゼ",
+    "target": "baby",
+    "category": "baby_care",
+    "stages": [
+      "pregnancy_late",
+      "postpartum_hospital",
+      "postpartum_care",
+      "newborn",
+      "infant_0_3"
+    ],
+    "priority": "recommended",
+    "quantityMin": 5,
+    "quantityMax": 10,
+    "unit": "枚",
+    "purchaseTiming": "before_birth",
+    "bagTags": [
+      "hospital_bag",
+      "discharge_bag",
+      "postpartum_care_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "baby_bath_towels",
+    "name": "ベビー用バスタオル",
+    "target": "baby",
+    "category": "bath",
+    "stages": [
+      "pregnancy_late",
+      "newborn",
+      "infant_0_3"
+    ],
+    "priority": "essential",
+    "quantityMin": 2,
+    "quantityMax": 3,
+    "unit": "枚",
+    "purchaseTiming": "before_birth",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "newborn_diapers",
+    "name": "新生児用おむつ",
+    "target": "baby",
+    "category": "diaper",
+    "stages": [
+      "pregnancy_late",
+      "postpartum_hospital",
+      "newborn"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "パック",
+    "purchaseTiming": "before_birth",
+    "bagTags": [],
+    "purchaseCaution": true,
+    "notes": "サイズアウトや肌との相性を考え、最初は大量購入しない。",
+    "providedByHospitalPossible": true
+  },
+  {
+    "id": "baby_wipes",
+    "name": "おしりふき",
+    "target": "baby",
+    "category": "diaper",
+    "stages": [
+      "pregnancy_late",
+      "postpartum_hospital",
+      "postpartum_care",
+      "newborn",
+      "infant_0_3",
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "essential",
+    "quantityMin": 3,
+    "quantityMax": 5,
+    "unit": "パック",
+    "purchaseTiming": "before_birth",
+    "bagTags": [
+      "postpartum_care_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": "",
+    "providedByHospitalPossible": true
+  },
+  {
+    "id": "diaper_change_mat",
+    "name": "おむつ替えシート",
+    "target": "baby",
+    "category": "diaper",
+    "stages": [
+      "newborn",
+      "infant_0_3",
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 2,
+    "unit": "枚",
+    "purchaseTiming": "before_birth",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "diaper_disposal_bags",
+    "name": "防臭袋",
+    "target": "baby",
+    "category": "diaper",
+    "stages": [
+      "newborn",
+      "infant_0_3",
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "optional",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "箱",
+    "purchaseTiming": "when_needed",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "diaper_bin",
+    "name": "おむつ用ゴミ箱",
+    "target": "baby",
+    "category": "diaper",
+    "stages": [
+      "newborn",
+      "infant_0_3",
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "optional",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "個",
+    "purchaseTiming": "when_needed",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "baby_bottle",
+    "name": "哺乳瓶",
+    "target": "baby",
+    "category": "feeding",
+    "stages": [
+      "pregnancy_late",
+      "postpartum_hospital",
+      "newborn",
+      "infant_0_3",
+      "infant_3_6"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 2,
+    "unit": "本",
+    "purchaseTiming": "before_birth",
+    "bagTags": [
+      "postpartum_care_bag"
+    ],
+    "purchaseCaution": true,
+    "notes": "最初から大量購入せず、授乳方法や赤ちゃんとの相性を見て追加する。"
+  },
+  {
+    "id": "bottle_brush",
+    "name": "哺乳瓶ブラシ",
+    "target": "baby",
+    "category": "feeding",
+    "stages": [
+      "pregnancy_late",
+      "newborn",
+      "infant_0_3",
+      "infant_3_6"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "本",
+    "purchaseTiming": "before_birth",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "bottle_sterilizer",
+    "name": "哺乳瓶消毒用品",
+    "target": "baby",
+    "category": "feeding",
+    "stages": [
+      "pregnancy_late",
+      "newborn",
+      "infant_0_3"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "セット",
+    "purchaseTiming": "before_birth",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "formula",
+    "name": "粉ミルク",
+    "target": "baby",
+    "category": "feeding",
+    "stages": [
+      "postpartum_hospital",
+      "newborn",
+      "infant_0_3",
+      "infant_3_6"
+    ],
+    "priority": "later",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "缶",
+    "purchaseTiming": "when_needed",
+    "bagTags": [
+      "postpartum_care_bag"
+    ],
+    "purchaseCaution": true,
+    "notes": "病院で使用する種類や授乳方針を確認してから購入でもよい。"
+  },
+  {
+    "id": "baby_bath",
+    "name": "ベビーバス",
+    "target": "baby",
+    "category": "bath",
+    "stages": [
+      "pregnancy_late",
+      "newborn"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "個",
+    "purchaseTiming": "before_birth",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "baby_soap",
+    "name": "ベビーソープ",
+    "target": "baby",
+    "category": "bath",
+    "stages": [
+      "pregnancy_late",
+      "newborn",
+      "infant_0_3",
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "本",
+    "purchaseTiming": "before_birth",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "baby_moisturizer",
+    "name": "ベビー用保湿剤",
+    "target": "baby",
+    "category": "bath",
+    "stages": [
+      "pregnancy_late",
+      "newborn",
+      "infant_0_3",
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "本",
+    "purchaseTiming": "before_birth",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "baby_nail_clippers",
+    "name": "ベビー用爪切り",
+    "target": "baby",
+    "category": "baby_care",
+    "stages": [
+      "pregnancy_late",
+      "newborn",
+      "infant_0_3",
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "個",
+    "purchaseTiming": "before_birth",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "baby_thermometer",
+    "name": "体温計",
+    "target": "baby",
+    "category": "baby_care",
+    "stages": [
+      "pregnancy_late",
+      "newborn",
+      "infant_0_3",
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "個",
+    "purchaseTiming": "before_birth",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "baby_cotton_swabs",
+    "name": "ベビー綿棒",
+    "target": "baby",
+    "category": "baby_care",
+    "stages": [
+      "newborn",
+      "infant_0_3"
+    ],
+    "priority": "optional",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "パック",
+    "purchaseTiming": "before_birth",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "nasal_aspirator",
+    "name": "鼻吸い器",
+    "target": "baby",
+    "category": "baby_care",
+    "stages": [
+      "newborn",
+      "infant_0_3",
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "optional",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "個",
+    "purchaseTiming": "when_needed",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "car_seat",
+    "name": "チャイルドシート",
+    "target": "baby",
+    "category": "transport",
+    "stages": [
+      "pregnancy_middle",
+      "pregnancy_late",
+      "newborn",
+      "infant_0_3",
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "台",
+    "purchaseTiming": "before_36_weeks",
+    "bagTags": [],
+    "conditional": true,
+    "condition": "自家用車、家族の車、タクシー等で対象となる車移動を行う場合",
+    "purchaseCaution": false,
+    "notes": "出産前に設置方法と使用方法を確認する。",
+    "setupRequired": true
+  },
+  {
+    "id": "baby_carrier",
+    "name": "抱っこ紐",
+    "target": "baby",
+    "category": "transport",
+    "stages": [
+      "pregnancy_middle",
+      "pregnancy_late",
+      "infant_0_3",
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "個",
+    "purchaseTiming": "before_birth",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": "対象月齢、体重、装着方法を確認する。"
+  },
+  {
+    "id": "stroller",
+    "name": "ベビーカー",
+    "target": "baby",
+    "category": "transport",
+    "stages": [
+      "pregnancy_middle",
+      "pregnancy_late",
+      "infant_0_3",
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "optional",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "台",
+    "purchaseTiming": "when_needed",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": "生活スタイルによって産後購入でもよい。"
+  },
+  {
+    "id": "mother_outfit_discharge",
+    "name": "母親の退院服",
+    "target": "mother",
+    "category": "hospital_clothing",
+    "stages": [
+      "pregnancy_late",
+      "postpartum_hospital"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "セット",
+    "purchaseTiming": "before_34_weeks",
+    "bagTags": [
+      "discharge_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": "産後もお腹がすぐには戻らないため、ゆったりした服を選ぶ。"
+  },
+  {
+    "id": "mother_toiletries",
+    "name": "洗面用品セット",
+    "target": "mother",
+    "category": "hygiene",
+    "stages": [
+      "prenatal_hospital",
+      "postpartum_hospital",
+      "postpartum_care"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "セット",
+    "purchaseTiming": "before_34_weeks",
+    "bagTags": [
+      "hospital_bag",
+      "postpartum_care_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": "",
+    "includedItems": [
+      "歯ブラシ",
+      "歯磨き粉",
+      "洗顔料",
+      "化粧水",
+      "保湿剤",
+      "シャンプー",
+      "コンディショナー",
+      "ボディソープ",
+      "ヘアブラシ",
+      "ヘアゴム"
+    ]
+  },
+  {
+    "id": "postpartum_care_baby_clothes",
+    "name": "産後ケア用赤ちゃん着替え",
+    "target": "baby",
+    "category": "postpartum_care",
+    "stages": [
+      "postpartum_care"
+    ],
+    "priority": "recommended",
+    "quantityMin": 2,
+    "quantityMax": 4,
+    "unit": "セット",
+    "purchaseTiming": "when_needed",
+    "bagTags": [
+      "postpartum_care_bag"
+    ],
+    "purchaseCaution": false,
+    "notes": "施設で貸与・提供される場合があるため事前確認する。",
+    "providedByFacilityPossible": true
+  },
+  {
+    "id": "mother_diaper_bag",
+    "name": "マザーズバッグ",
+    "target": "mother",
+    "category": "outing",
+    "stages": [
+      "infant_0_3",
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "個",
+    "purchaseTiming": "when_needed",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "bib",
+    "name": "スタイ",
+    "target": "baby",
+    "category": "baby_clothing",
+    "stages": [
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "recommended",
+    "quantityMin": 3,
+    "quantityMax": 6,
+    "unit": "枚",
+    "purchaseTiming": "when_needed",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "teether",
+    "name": "歯固め",
+    "target": "baby",
+    "category": "play",
+    "stages": [
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "optional",
+    "quantityMin": 1,
+    "quantityMax": 2,
+    "unit": "個",
+    "purchaseTiming": "when_needed",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "baby_play_mat",
+    "name": "プレイマット",
+    "target": "baby",
+    "category": "play",
+    "stages": [
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "optional",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "枚",
+    "purchaseTiming": "before_rolling",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "baby_spoon",
+    "name": "離乳食用スプーン",
+    "target": "baby",
+    "category": "weaning",
+    "stages": [
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 2,
+    "unit": "本",
+    "purchaseTiming": "before_weaning",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "feeding_bib",
+    "name": "食事用エプロン",
+    "target": "baby",
+    "category": "weaning",
+    "stages": [
+      "infant_6_12"
+    ],
+    "priority": "recommended",
+    "quantityMin": 2,
+    "quantityMax": 3,
+    "unit": "枚",
+    "purchaseTiming": "before_weaning",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "baby_dishes",
+    "name": "離乳食用食器",
+    "target": "baby",
+    "category": "weaning",
+    "stages": [
+      "infant_6_12"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "セット",
+    "purchaseTiming": "before_weaning",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": "",
+    "includedItems": [
+      "小皿",
+      "小鉢",
+      "コップまたはマグ"
+    ]
+  },
+  {
+    "id": "baby_high_chair",
+    "name": "ベビーチェア",
+    "target": "baby",
+    "category": "weaning",
+    "stages": [
+      "infant_6_12"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 1,
+    "unit": "台",
+    "purchaseTiming": "before_weaning",
+    "bagTags": [],
+    "purchaseCaution": true,
+    "notes": "赤ちゃんのお座り状況や家庭の食事環境を確認してから選ぶ。"
+  },
+  {
+    "id": "weaning_freezer_containers",
+    "name": "離乳食冷凍小分け容器",
+    "target": "baby",
+    "category": "weaning",
+    "stages": [
+      "infant_6_12"
+    ],
+    "priority": "recommended",
+    "quantityMin": 1,
+    "quantityMax": 3,
+    "unit": "セット",
+    "purchaseTiming": "before_weaning",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "baby_gate",
+    "name": "ベビーゲート",
+    "target": "baby",
+    "category": "safety",
+    "stages": [
+      "infant_6_12"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 3,
+    "unit": "台",
+    "purchaseTiming": "before_crawling",
+    "bagTags": [],
+    "conditional": true,
+    "condition": "階段、キッチン、危険区域への侵入防止が必要な場合",
+    "purchaseCaution": false,
+    "notes": ""
+  },
+  {
+    "id": "drawer_locks",
+    "name": "引き出し・扉ロック",
+    "target": "baby",
+    "category": "safety",
+    "stages": [
+      "infant_6_12"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": 10,
+    "unit": "個",
+    "purchaseTiming": "before_crawling",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": "危険物が入っている収納を優先する。"
+  },
+  {
+    "id": "furniture_anchors",
+    "name": "家具転倒防止用品",
+    "target": "shared",
+    "category": "safety",
+    "stages": [
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": null,
+    "unit": "必要数",
+    "purchaseTiming": "before_crawling",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": "テレビや棚など転倒の危険がある家具を固定する。"
+  },
+  {
+    "id": "cable_management",
+    "name": "コード類の整理・固定",
+    "target": "shared",
+    "category": "safety",
+    "stages": [
+      "infant_3_6",
+      "infant_6_12"
+    ],
+    "priority": "essential",
+    "quantityMin": 1,
+    "quantityMax": null,
+    "unit": "必要数",
+    "purchaseTiming": "before_crawling",
+    "bagTags": [],
+    "purchaseCaution": false,
+    "notes": ""
+  }
+];
+
+const MASTER_TASKS = [
+  {
+    "id": "choose_birth_hospital",
+    "name": "出産予定病院を決める",
+    "stage": "pregnancy_early",
+    "target": "mother",
+    "priority": "essential"
+  },
+  {
+    "id": "decide_baby_sleep_location",
+    "name": "赤ちゃんの寝る場所を決める",
+    "stage": "pregnancy_early",
+    "target": "baby",
+    "priority": "essential"
+  },
+  {
+    "id": "decide_baby_bed",
+    "name": "ベビーベッドを使うか決める",
+    "stage": "pregnancy_early",
+    "target": "baby",
+    "priority": "recommended"
+  },
+  {
+    "id": "decide_car_use",
+    "name": "赤ちゃんとの車移動の有無を確認する",
+    "stage": "pregnancy_early",
+    "target": "shared",
+    "priority": "essential"
+  },
+  {
+    "id": "research_car_seat",
+    "name": "チャイルドシートを比較する",
+    "stage": "pregnancy_middle",
+    "target": "baby",
+    "priority": "essential"
+  },
+  {
+    "id": "research_stroller",
+    "name": "ベビーカーを比較する",
+    "stage": "pregnancy_middle",
+    "target": "baby",
+    "priority": "recommended"
+  },
+  {
+    "id": "research_baby_carrier",
+    "name": "抱っこ紐を比較する",
+    "stage": "pregnancy_middle",
+    "target": "baby",
+    "priority": "recommended"
+  },
+  {
+    "id": "decide_postpartum_support",
+    "name": "産後のサポート体制を決める",
+    "stage": "pregnancy_middle",
+    "target": "mother",
+    "priority": "essential",
+    "subtasks": [
+      "パートナーの育児分担を決める",
+      "家族のサポート可否を確認する",
+      "里帰りの有無を決める",
+      "産後ケア利用先を調べる"
+    ]
+  },
+  {
+    "id": "check_hospital_supply_list",
+    "name": "病院から提供される用品を確認する",
+    "stage": "pregnancy_middle",
+    "target": "mother",
+    "priority": "essential"
+  },
+  {
+    "id": "complete_labor_bag",
+    "name": "陣痛バッグを完成させる",
+    "stage": "pregnancy_late",
+    "target": "mother",
+    "priority": "essential",
+    "recommendedByWeek": 34
+  },
+  {
+    "id": "complete_hospital_bag",
+    "name": "入院バッグを完成させる",
+    "stage": "pregnancy_late",
+    "target": "mother",
+    "priority": "essential",
+    "recommendedByWeek": 34
+  },
+  {
+    "id": "complete_discharge_bag",
+    "name": "退院バッグを完成させる",
+    "stage": "pregnancy_late",
+    "target": "shared",
+    "priority": "essential",
+    "recommendedByWeek": 34
+  },
+  {
+    "id": "wash_baby_clothes",
+    "name": "赤ちゃん衣類を洗濯する",
+    "stage": "pregnancy_late",
+    "target": "baby",
+    "priority": "essential",
+    "recommendedByWeek": 36
+  },
+  {
+    "id": "prepare_baby_sleep_space",
+    "name": "赤ちゃんの寝床を完成させる",
+    "stage": "pregnancy_late",
+    "target": "baby",
+    "priority": "essential",
+    "recommendedByWeek": 36
+  },
+  {
+    "id": "install_car_seat",
+    "name": "チャイルドシートを設置する",
+    "stage": "pregnancy_late",
+    "target": "baby",
+    "priority": "essential",
+    "recommendedByWeek": 36,
+    "conditional": true,
+    "condition": "車を使用する場合"
+  },
+  {
+    "id": "learn_car_seat_use",
+    "name": "チャイルドシートの使用方法を確認する",
+    "stage": "pregnancy_late",
+    "target": "baby",
+    "priority": "essential",
+    "recommendedByWeek": 36,
+    "conditional": true,
+    "condition": "車を使用する場合"
+  },
+  {
+    "id": "prepare_postpartum_food",
+    "name": "産後用の食事環境を準備する",
+    "stage": "pregnancy_late",
+    "target": "mother",
+    "priority": "recommended",
+    "subtasks": [
+      "冷凍食品を準備する",
+      "宅配食を検討する",
+      "ネットスーパーを登録する"
+    ]
+  },
+  {
+    "id": "decide_housework_roles",
+    "name": "産後の家事分担を決める",
+    "stage": "pregnancy_late",
+    "target": "shared",
+    "priority": "essential",
+    "subtasks": [
+      "食事担当",
+      "洗濯担当",
+      "食器洗い担当",
+      "ゴミ出し担当",
+      "買い物担当",
+      "沐浴担当",
+      "夜間のおむつ交換担当",
+      "ミルク担当"
+    ]
+  },
+  {
+    "id": "apply_postpartum_care",
+    "name": "産後ケアの申請・予約方法を確認する",
+    "stage": "pregnancy_late",
+    "target": "mother",
+    "priority": "recommended"
+  },
+  {
+    "id": "babyproof_home",
+    "name": "家の安全対策を行う",
+    "stage": "infant_3_6",
+    "target": "baby",
+    "priority": "essential",
+    "subtasks": [
+      "家具の転倒防止",
+      "コード類の整理",
+      "誤飲する大きさの物を片付ける",
+      "危険な収納をロックする",
+      "階段やキッチンへの侵入対策"
+    ]
+  },
+  {
+    "id": "prepare_weaning",
+    "name": "離乳食用品を準備する",
+    "stage": "infant_3_6",
+    "target": "baby",
+    "priority": "essential"
+  }
+];
+
+const MASTER_BAGS = [
+  {
+    "id": "labor_bag",
+    "name": "陣痛バッグ",
+    "description": "陣痛・破水などで病院へ向かう際、すぐに取り出したい物をまとめるバッグ。"
+  },
+  {
+    "id": "hospital_bag",
+    "name": "入院バッグ",
+    "description": "産前・産後の入院生活に必要な用品をまとめるバッグ。"
+  },
+  {
+    "id": "discharge_bag",
+    "name": "退院バッグ",
+    "description": "母親と赤ちゃんが退院するときに使用する物をまとめるバッグ。"
+  },
+  {
+    "id": "postpartum_care_bag",
+    "name": "産後ケアバッグ",
+    "description": "宿泊型・通所型産後ケアを利用するときに使用する物をまとめるバッグ。"
+  }
+];
+
+const CATEGORY_NAME = Object.fromEntries(MASTER_CATEGORIES.map((c) => [c.id, c.name]));
+const STAGE_NAME = Object.fromEntries(MASTER_STAGES.map((s) => [s.id, s.name]));
+const STAGE_ORDER = Object.fromEntries(MASTER_STAGES.map((s, i) => [s.id, i]));
+const COMPLETED_STATUSES = ["purchased", "washed", "installed", "prepared", "packed", "not_needed"];
 function Stamp({ active }) {
   return (
     <span
@@ -645,335 +2577,648 @@ function MoneyTab({ items, setItems }) {
   );
 }
 
-function TodoAddRow({ accent, onAdd }) {
-  const [open, setOpen] = useState(false);
-  const [text, setText] = useState("");
-  const [phase, setPhase] = useState(TODO_PHASES[0]);
-
-  const submit = () => {
-    if (!text.trim()) return;
-    onAdd(text.trim(), phase);
-    setText("");
-    setOpen(false);
-  };
-
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        style={{
-          width: "100%",
-          marginTop: 10,
-          padding: "10px 14px",
-          borderRadius: 12,
-          border: `1.5px dashed ${accent}66`,
-          background: "transparent",
-          color: accent,
-          fontFamily: "'Zen Kaku Gothic New', sans-serif",
-          fontSize: 13,
-          fontWeight: 500,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 6,
-          cursor: "pointer",
-        }}
-      >
-        <Plus size={15} /> 追加する
-      </button>
-    );
-  }
-
-  return (
-    <div
-      style={{
-        marginTop: 10,
-        padding: 12,
-        borderRadius: 12,
-        background: "#fff",
-        border: `1px solid ${accent}33`,
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
-      }}
-    >
-      <input
-        autoFocus
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="やることを入力"
-        style={{
-          border: "none",
-          borderBottom: "1px solid #E4E7DC",
-          padding: "6px 2px",
-          fontFamily: "'Zen Kaku Gothic New', sans-serif",
-          fontSize: 14,
-          outline: "none",
-          background: "transparent",
-          color: "#262B22",
-        }}
-      />
-      <select
-        value={phase}
-        onChange={(e) => setPhase(e.target.value)}
-        style={{
-          border: "1px solid #E4E7DC",
-          borderRadius: 8,
-          padding: "6px 8px",
-          fontFamily: "'Zen Kaku Gothic New', sans-serif",
-          fontSize: 12.5,
-          color: "#5C6355",
-          background: "#FAFAF6",
-        }}
-      >
-        {TODO_PHASES.map((p) => (
-          <option key={p} value={p}>
-            {p}
-          </option>
-        ))}
-      </select>
-      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-        <button
-          onClick={() => setOpen(false)}
-          style={{ border: "none", background: "none", color: "#9AA192", fontSize: 12, cursor: "pointer", padding: "6px 10px" }}
-        >
-          キャンセル
-        </button>
-        <button
-          onClick={submit}
-          style={{
-            border: "none",
-            background: accent,
-            color: "#fff",
-            fontSize: 12,
-            fontWeight: 600,
-            borderRadius: 8,
-            padding: "6px 14px",
-            cursor: "pointer",
-          }}
-        >
-          追加
-        </button>
-      </div>
-    </div>
-  );
+// ── 妊娠週数・出生日から「今のstage」を自動判定するヘルパー ──
+function computeCurrentWeek(info) {
+  if (!info || !info.weekInput || !info.weekInputDate) return null;
+  const today = new Date();
+  const setDate = new Date(info.weekInputDate);
+  const elapsedWeeks = Math.floor((today - setDate) / (7 * 86400000));
+  return Math.max(0, info.weekInput + elapsedWeeks);
 }
 
-function TodoItemRow({ item, accent, onToggle, onRemove, onMemoChange, onPhaseChange }) {
-  const [openMemo, setOpenMemo] = useState(false);
-  const hasMemo = item.memo && item.memo.trim().length > 0;
+function computeBabyAge(info) {
+  if (!info || !info.babyBirthDate) return null;
+  const today = new Date();
+  const birth = new Date(info.babyBirthDate);
+  const days = Math.max(0, Math.floor((today - birth) / 86400000));
+  const months = days / 30.44;
+  return { days, months };
+}
+
+function computeCurrentStageId(info) {
+  if (info && info.babyBirthDate) {
+    const age = computeBabyAge(info);
+    if (age.days < 28) return "newborn";
+    if (age.months < 3) return "infant_0_3";
+    if (age.months < 6) return "infant_3_6";
+    return "infant_6_12";
+  }
+  const week = computeCurrentWeek(info);
+  if (week === null) return "pregnancy_early";
+  if (week < 16) return "pregnancy_early";
+  if (week < 28) return "pregnancy_middle";
+  return "pregnancy_late";
+}
+
+function stageDisplayText(info) {
+  if (info && info.babyBirthDate) {
+    const age = computeBabyAge(info);
+    if (age.days < 28) return `生後${age.days}日`;
+    return `生後${Math.floor(age.months)}か月`;
+  }
+  const week = computeCurrentWeek(info);
+  return week === null ? "未設定" : `妊娠${week}週`;
+}
+
+function PregnancyInfoBar({ info, setInfo, currentStageId }) {
+  const [open, setOpen] = useState(false);
+  const mode = info && info.babyBirthDate ? "born" : "pregnant";
 
   return (
-    <div
-      style={{
-        background: "#fff",
-        borderRadius: 14,
-        boxShadow: "0 1px 3px rgba(38,43,34,0.06)",
-        opacity: item.done ? 0.6 : 1,
-        overflow: "hidden",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px" }}>
-        <button onClick={() => onToggle(item.id)} style={{ border: "none", background: "none", padding: 0, cursor: "pointer" }}>
-          <Stamp active={item.done} />
-        </button>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <span
-            style={{
-              fontFamily: "'Zen Kaku Gothic New', sans-serif",
-              fontSize: 14.5,
-              color: "#262B22",
-              textDecoration: item.done ? "line-through" : "none",
-            }}
-          >
-            {item.title}
-          </span>
-          {hasMemo && !openMemo && (
-            <div style={{ fontSize: 11, color: "#B4791F", marginTop: 2, fontFamily: "'Zen Kaku Gothic New', sans-serif" }}>
-              📝 {item.memo}
-            </div>
-          )}
+    <div style={{ background: "#fff", borderRadius: 12, padding: "10px 12px", marginBottom: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ fontFamily: "'Zen Kaku Gothic New', sans-serif", fontSize: 12.5, color: "#3E4238" }}>
+          <span style={{ fontWeight: 700 }}>現在：{STAGE_NAME[currentStageId]}</span>
+          <span style={{ color: "#9AA192", marginLeft: 6 }}>（{stageDisplayText(info)}）</span>
         </div>
         <button
-          onClick={() => setOpenMemo((v) => !v)}
-          style={{ border: "none", background: "none", color: hasMemo ? accent : "#C9CDC0", cursor: "pointer", padding: 2, flexShrink: 0 }}
-          aria-label="メモを編集"
+          onClick={() => setOpen((v) => !v)}
+          style={{ border: "none", background: "none", color: "#3E6C86", fontSize: 11.5, cursor: "pointer", fontFamily: "'Zen Kaku Gothic New', sans-serif" }}
         >
-          <ChevronDown size={16} style={{ transform: openMemo ? "rotate(180deg)" : "none", transition: "transform 0.15s ease" }} />
-        </button>
-        <button onClick={() => onRemove(item.id)} style={{ border: "none", background: "none", color: "#C9CDC0", cursor: "pointer", padding: 2, flexShrink: 0 }}>
-          <Trash2 size={15} />
+          {open ? "閉じる" : "変更する"}
         </button>
       </div>
-      {openMemo && (
-        <div style={{ padding: "0 14px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
-          <textarea
-            value={item.memo}
-            onChange={(e) => onMemoChange(item.id, e.target.value)}
-            placeholder="メモ（病院で言われたこと、持ち物、次にやることなど）"
-            rows={2}
-            style={{
-              border: "1px solid #E4E7DC",
-              borderRadius: 8,
-              padding: "8px 10px",
-              fontFamily: "'Zen Kaku Gothic New', sans-serif",
-              fontSize: 12.5,
-              color: "#3E4238",
-              background: "#FAFAF6",
-              resize: "vertical",
-              outline: "none",
-            }}
-          />
-          <select
-            value={item.phase}
-            onChange={(e) => onPhaseChange(item.id, e.target.value)}
-            style={{
-              border: "1px solid #E4E7DC",
-              borderRadius: 8,
-              padding: "6px 8px",
-              fontFamily: "'Zen Kaku Gothic New', sans-serif",
-              fontSize: 12,
-              color: "#5C6355",
-              background: "#fff",
-              alignSelf: "flex-start",
-            }}
-          >
-            {TODO_PHASES.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
+      {open && (
+        <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8 }}>
+            {[
+              { key: "pregnant", label: "妊娠中" },
+              { key: "born", label: "誕生済み" },
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() =>
+                  setInfo((prev) => ({
+                    ...prev,
+                    babyBirthDate: key === "pregnant" ? "" : prev.babyBirthDate || new Date().toISOString().slice(0, 10),
+                  }))
+                }
+                style={{
+                  flex: 1,
+                  border: `1.5px solid ${mode === key ? "#3E6C86" : "#E4E7DC"}`,
+                  background: mode === key ? "#3E6C86" : "#fff",
+                  color: mode === key ? "#fff" : "#5C6355",
+                  borderRadius: 8,
+                  padding: "6px 8px",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  fontFamily: "'Zen Kaku Gothic New', sans-serif",
+                }}
+              >
+                {label}
+              </button>
             ))}
-          </select>
+          </div>
+          {mode === "pregnant" ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 12, color: "#5C6355", fontFamily: "'Zen Kaku Gothic New', sans-serif" }}>現在の妊娠週数</span>
+              <input
+                type="number"
+                min="0"
+                max="42"
+                value={info.weekInput || ""}
+                onChange={(e) =>
+                  setInfo((prev) => ({
+                    ...prev,
+                    weekInput: Number(e.target.value),
+                    weekInputDate: new Date().toISOString().slice(0, 10),
+                  }))
+                }
+                style={{ width: 60, border: "1px solid #E4E7DC", borderRadius: 8, padding: "5px 8px", fontSize: 13 }}
+              />
+              <span style={{ fontSize: 12, color: "#9AA192" }}>週</span>
+            </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 12, color: "#5C6355", fontFamily: "'Zen Kaku Gothic New', sans-serif" }}>生年月日</span>
+              <input
+                type="date"
+                value={info.babyBirthDate || ""}
+                onChange={(e) => setInfo((prev) => ({ ...prev, babyBirthDate: e.target.value }))}
+                style={{ border: "1px solid #E4E7DC", borderRadius: 8, padding: "5px 8px", fontSize: 13 }}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-function TodoTab({ items, setItems }) {
-  const accent = ACCENTS.todo.main;
-  const toggle = (id) => setItems(items.map((it) => (it.id === id ? { ...it, done: !it.done } : it)));
-  const remove = (id) => setItems(items.filter((it) => it.id !== id));
-  const setMemo = (id, memo) => setItems(items.map((it) => (it.id === id ? { ...it, memo } : it)));
-  const setPhase = (id, phase) => setItems(items.map((it) => (it.id === id ? { ...it, phase } : it)));
-  const add = (title, phase) =>
-    setItems([...items, { id: `t${Date.now()}`, title, phase, done: false, memo: "" }]);
-  const done = items.filter((i) => i.done).length;
+// ── やること（タスク）タブ ──
+function getTaskState(taskState, id) {
+  return taskState[id] || { done: false, subtasks: {} };
+}
+
+function TaskCard({ task, state, accent, onToggle, onSubtaskToggle }) {
+  const [open, setOpen] = useState(false);
+  const hasSubtasks = task.subtasks && task.subtasks.length > 0;
+  const doneSubtasks = hasSubtasks ? task.subtasks.filter((_, i) => state.subtasks[i]).length : 0;
 
   return (
-    <div>
-      <ProgressBar done={done} total={items.length} accent={accent} />
-      {TODO_PHASES.map((phase) => {
-        const list = items.filter((i) => i.phase === phase);
-        if (list.length === 0) return null;
-        return (
-          <div key={phase} style={{ marginTop: 18 }}>
-            <div
-              style={{
-                fontFamily: "'Shippori Mincho', serif",
-                fontSize: 13,
-                fontWeight: 700,
-                color: accent,
-                marginBottom: 8,
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: accent }} />
-              {phase}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {list.map((it) => (
-                <TodoItemRow
-                  key={it.id}
-                  item={it}
-                  accent={accent}
-                  onToggle={toggle}
-                  onRemove={remove}
-                  onMemoChange={setMemo}
-                  onPhaseChange={setPhase}
-                />
-              ))}
-            </div>
+    <div style={{ background: "#fff", borderRadius: 14, boxShadow: "0 1px 3px rgba(38,43,34,0.06)", opacity: state.done ? 0.6 : 1, overflow: "hidden" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px" }}>
+        <button onClick={() => onToggle(task.id)} style={{ border: "none", background: "none", padding: 0, cursor: "pointer" }}>
+          <Stamp active={state.done} />
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ fontFamily: "'Zen Kaku Gothic New', sans-serif", fontSize: 14, color: "#262B22", textDecoration: state.done ? "line-through" : "none" }}>
+            {task.name}
+          </span>
+          <div style={{ display: "flex", gap: 6, marginTop: 3, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 10.5, color: accent, background: ACCENTS.todo.soft, borderRadius: 5, padding: "1px 6px" }}>
+              {ENUM_TARGET[task.target]}
+            </span>
+            {task.priority === "essential" && (
+              <span style={{ fontSize: 10.5, color: "#B23A48", background: "#F3E3E6", borderRadius: 5, padding: "1px 6px" }}>必須</span>
+            )}
+            {task.recommendedByWeek && (
+              <span style={{ fontSize: 10.5, color: "#9AA192" }}>〜{task.recommendedByWeek}週目安</span>
+            )}
+            {task.conditional && <span style={{ fontSize: 10.5, color: "#9AA192" }}>（{task.condition}）</span>}
           </div>
-        );
-      })}
-      <TodoAddRow accent={accent} onAdd={add} />
+        </div>
+        {hasSubtasks && (
+          <button onClick={() => setOpen((v) => !v)} style={{ border: "none", background: "none", color: "#B7BBA9", cursor: "pointer", padding: 2, flexShrink: 0, fontSize: 10.5, fontFamily: "'Zen Kaku Gothic New', sans-serif", display: "flex", alignItems: "center", gap: 2 }}>
+            {doneSubtasks}/{task.subtasks.length}
+            <ChevronDown size={14} style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s ease" }} />
+          </button>
+        )}
+      </div>
+      {open && hasSubtasks && (
+        <div style={{ padding: "0 14px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
+          {task.subtasks.map((s, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <button onClick={() => onSubtaskToggle(task.id, i)} style={{ border: "none", background: "none", padding: 0, cursor: "pointer" }}>
+                <Stamp active={!!state.subtasks[i]} />
+              </button>
+              <span style={{ fontSize: 12.5, color: "#3E4238", fontFamily: "'Zen Kaku Gothic New', sans-serif", textDecoration: state.subtasks[i] ? "line-through" : "none" }}>
+                {s}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-function SupplyTab({ items, setItems }) {
-  const accent = ACCENTS.supply.main;
-  const toggle = (id) => setItems(items.map((it) => (it.id === id ? { ...it, done: !it.done } : it)));
-  const remove = (id) => setItems(items.filter((it) => it.id !== id));
-  const add = (title) =>
-    setItems([...items, { id: `s${Date.now()}`, title, category: "その他", done: false }]);
-  const cats = [...new Set(items.map((i) => i.category))];
-  const done = items.filter((i) => i.done).length;
+function TodoTab({ taskState, setTaskState, pregnancyInfo, setPregnancyInfo }) {
+  const accent = ACCENTS.todo.main;
+  const currentStageId = computeCurrentStageId(pregnancyInfo);
+
+  const toggle = (id) =>
+    setTaskState((prev) => ({ ...prev, [id]: { ...getTaskState(prev, id), done: !getTaskState(prev, id).done } }));
+  const subtaskToggle = (id, i) =>
+    setTaskState((prev) => {
+      const cur = getTaskState(prev, id);
+      return { ...prev, [id]: { ...cur, subtasks: { ...cur.subtasks, [i]: !cur.subtasks[i] } } };
+    });
+
+  const doneCount = MASTER_TASKS.filter((t) => getTaskState(taskState, t.id).done).length;
+  const todayTasks = MASTER_TASKS.filter((t) => t.stage === currentStageId);
+  const otherStages = MASTER_STAGES.filter((s) => s.id !== currentStageId).map((s) => ({
+    stage: s,
+    tasks: MASTER_TASKS.filter((t) => t.stage === s.id),
+  })).filter((g) => g.tasks.length > 0);
 
   return (
     <div>
-      <ProgressBar done={done} total={items.length} accent={accent} />
-      {cats.map((cat) => {
-        const list = items.filter((i) => i.category === cat);
-        return (
-          <div key={cat} style={{ marginTop: 18 }}>
-            <div
-              style={{
-                fontFamily: "'Shippori Mincho', serif",
-                fontSize: 13,
-                fontWeight: 700,
-                color: accent,
-                marginBottom: 8,
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: accent }} />
-              {cat}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              {list.map((it) => (
-                <div
-                  key={it.id}
-                  style={{
-                    background: "#fff",
-                    borderRadius: 14,
-                    padding: "10px 12px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    boxShadow: "0 1px 3px rgba(38,43,34,0.06)",
-                    opacity: it.done ? 0.6 : 1,
-                  }}
-                >
-                  <button onClick={() => toggle(it.id)} style={{ border: "none", background: "none", padding: 0, cursor: "pointer", flexShrink: 0 }}>
-                    <Stamp active={it.done} />
-                  </button>
-                  <span
+      <PregnancyInfoBar info={pregnancyInfo} setInfo={setPregnancyInfo} currentStageId={currentStageId} />
+      <ProgressBar done={doneCount} total={MASTER_TASKS.length} accent={accent} />
+
+      {todayTasks.length > 0 && (
+        <div style={{ marginTop: 18 }}>
+          <div style={{ fontFamily: "'Shippori Mincho', serif", fontSize: 13, fontWeight: 700, color: accent, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: accent }} />
+            今やること（{STAGE_NAME[currentStageId]}）
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {todayTasks.map((t) => (
+              <TaskCard key={t.id} task={t} state={getTaskState(taskState, t.id)} accent={accent} onToggle={toggle} onSubtaskToggle={subtaskToggle} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {otherStages.map(({ stage, tasks }) => (
+        <div key={stage.id} style={{ marginTop: 18 }}>
+          <div style={{ fontFamily: "'Shippori Mincho', serif", fontSize: 13, fontWeight: 700, color: "#B4B99F", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#D3D6C5" }} />
+            {stage.name}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {tasks.map((t) => (
+              <TaskCard key={t.id} task={t} state={getTaskState(taskState, t.id)} accent={accent} onToggle={toggle} onSubtaskToggle={subtaskToggle} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── 必需品タブ ──
+const DEFAULT_ITEM_STATE = {
+  status: "not_started",
+  plannedQuantity: null,
+  ownedQuantity: 0,
+  plannedPrice: null,
+  actualPrice: null,
+  preparedBy: "undecided",
+  acquisitionMethod: "undecided",
+  hospitalProvides: null,
+  facilityProvides: null,
+  brand: "",
+  productName: "",
+  shop: "",
+  url: "",
+  memo: "",
+  favorite: false,
+  needed: null,
+};
+
+function getItemState(itemState, id) {
+  return { ...DEFAULT_ITEM_STATE, ...(itemState[id] || {}) };
+}
+
+const PRIORITY_COLOR = { essential: "#B23A48", recommended: "#B4791F", optional: "#3E6C86", later: "#9AA192" };
+
+function ItemCard({ item, state, accent, currentStageId, onUpdate, onToggleFavorite }) {
+  const [open, setOpen] = useState(false);
+  const isCurrent = item.stages.includes(currentStageId);
+  const declined = item.conditional && state.needed === false;
+
+  return (
+    <div
+      style={{
+        background: "#fff",
+        borderRadius: 14,
+        boxShadow: isCurrent ? `0 0 0 1.5px ${accent}55` : "0 1px 3px rgba(38,43,34,0.06)",
+        opacity: declined ? 0.5 : 1,
+        overflow: "hidden",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px" }}>
+        <span style={{ width: 7, height: 7, borderRadius: "50%", background: PRIORITY_COLOR[item.priority], flexShrink: 0 }} title={ENUM_PRIORITY[item.priority]} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+            <span style={{ fontFamily: "'Zen Kaku Gothic New', sans-serif", fontSize: 13.5, fontWeight: 600, color: "#262B22", textDecoration: COMPLETED_STATUSES.includes(state.status) ? "line-through" : "none" }}>
+              {item.name}
+            </span>
+            {item.purchaseCaution && (
+              <span style={{ fontSize: 10, color: "#B4791F", background: "#F3EAD6", borderRadius: 5, padding: "1px 6px" }}>買いすぎ注意</span>
+            )}
+          </div>
+          <div style={{ fontSize: 10.5, color: "#9AA192", marginTop: 2 }}>
+            {CATEGORY_NAME[item.category]}・{item.quantityMin}
+            {item.quantityMax && item.quantityMax !== item.quantityMin ? `〜${item.quantityMax}` : ""}
+            {item.unit}
+          </div>
+        </div>
+        <button onClick={() => onToggleFavorite(item.id)} style={{ border: "none", background: "none", padding: 2, cursor: "pointer", flexShrink: 0 }}>
+          <Star size={16} color={state.favorite ? "#E0A83A" : "#D8DBCF"} fill={state.favorite ? "#E0A83A" : "none"} />
+        </button>
+        <button onClick={() => setOpen((v) => !v)} style={{ border: "none", background: "none", color: "#B7BBA9", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+          <ChevronDown size={16} style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s ease" }} />
+        </button>
+      </div>
+
+      {open && (
+        <div style={{ padding: "0 14px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
+          {item.conditional && (
+            <div style={{ background: "#FAFAF6", borderRadius: 8, padding: "8px 10px" }}>
+              <div style={{ fontSize: 11.5, color: "#5C6355", marginBottom: 6 }}>{item.condition}</div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {[
+                  { v: null, label: "未定" },
+                  { v: true, label: "必要" },
+                  { v: false, label: "不要" },
+                ].map((opt) => (
+                  <button
+                    key={String(opt.v)}
+                    onClick={() => onUpdate(item.id, { needed: opt.v })}
                     style={{
-                      flex: 1,
-                      fontFamily: "'Zen Kaku Gothic New', sans-serif",
-                      fontSize: 13,
-                      color: "#262B22",
-                      textDecoration: it.done ? "line-through" : "none",
+                      border: `1px solid ${state.needed === opt.v ? accent : "#E4E7DC"}`,
+                      background: state.needed === opt.v ? accent : "#fff",
+                      color: state.needed === opt.v ? "#fff" : "#5C6355",
+                      borderRadius: 6,
+                      padding: "3px 10px",
+                      fontSize: 11.5,
+                      cursor: "pointer",
                     }}
                   >
-                    {it.title}
-                  </span>
-                  <button onClick={() => remove(it.id)} style={{ border: "none", background: "none", color: "#C9CDC0", cursor: "pointer", padding: 0, flexShrink: 0 }}>
-                    <X size={13} />
+                    {opt.label}
                   </button>
-                </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <div style={{ fontSize: 11, color: "#9AA192", marginBottom: 4 }}>状況</div>
+            <select
+              value={state.status}
+              onChange={(e) => onUpdate(item.id, { status: e.target.value })}
+              style={{ width: "100%", border: "1px solid #E4E7DC", borderRadius: 8, padding: "7px 8px", fontSize: 12.5, background: "#fff" }}
+            >
+              {Object.entries(ENUM_STATUS).map(([k, label]) => (
+                <option key={k} value={k}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {(item.providedByHospitalPossible || item.providedByFacilityPossible) && (
+            <div style={{ display: "flex", gap: 10 }}>
+              {item.providedByHospitalPossible && (
+                <label style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "#5C6355" }}>
+                  <input type="checkbox" checked={!!state.hospitalProvides} onChange={(e) => onUpdate(item.id, { hospitalProvides: e.target.checked })} />
+                  病院提供品
+                </label>
+              )}
+              {item.providedByFacilityPossible && (
+                <label style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "#5C6355" }}>
+                  <input type="checkbox" checked={!!state.facilityProvides} onChange={(e) => onUpdate(item.id, { facilityProvides: e.target.checked })} />
+                  施設提供品
+                </label>
+              )}
+            </div>
+          )}
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <label style={{ fontSize: 11 }}>
+              <div style={{ color: "#9AA192", marginBottom: 3 }}>所有数</div>
+              <input
+                type="number"
+                value={state.ownedQuantity}
+                onChange={(e) => onUpdate(item.id, { ownedQuantity: Number(e.target.value) })}
+                style={{ width: "100%", border: "1px solid #E4E7DC", borderRadius: 8, padding: "6px 8px", fontSize: 12.5 }}
+              />
+            </label>
+            <label style={{ fontSize: 11 }}>
+              <div style={{ color: "#9AA192", marginBottom: 3 }}>予定数量</div>
+              <input
+                type="number"
+                value={state.plannedQuantity ?? ""}
+                onChange={(e) => onUpdate(item.id, { plannedQuantity: e.target.value === "" ? null : Number(e.target.value) })}
+                style={{ width: "100%", border: "1px solid #E4E7DC", borderRadius: 8, padding: "6px 8px", fontSize: 12.5 }}
+              />
+            </label>
+            <label style={{ fontSize: 11 }}>
+              <div style={{ color: "#9AA192", marginBottom: 3 }}>予定金額（円）</div>
+              <input
+                type="number"
+                value={state.plannedPrice ?? ""}
+                onChange={(e) => onUpdate(item.id, { plannedPrice: e.target.value === "" ? null : Number(e.target.value) })}
+                style={{ width: "100%", border: "1px solid #E4E7DC", borderRadius: 8, padding: "6px 8px", fontSize: 12.5 }}
+              />
+            </label>
+            <label style={{ fontSize: 11 }}>
+              <div style={{ color: "#9AA192", marginBottom: 3 }}>実購入金額（円）</div>
+              <input
+                type="number"
+                value={state.actualPrice ?? ""}
+                onChange={(e) => onUpdate(item.id, { actualPrice: e.target.value === "" ? null : Number(e.target.value) })}
+                style={{ width: "100%", border: "1px solid #E4E7DC", borderRadius: 8, padding: "6px 8px", fontSize: 12.5 }}
+              />
+            </label>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <input placeholder="ブランド" value={state.brand} onChange={(e) => onUpdate(item.id, { brand: e.target.value })} style={{ border: "1px solid #E4E7DC", borderRadius: 8, padding: "6px 8px", fontSize: 12.5 }} />
+            <input placeholder="商品名" value={state.productName} onChange={(e) => onUpdate(item.id, { productName: e.target.value })} style={{ border: "1px solid #E4E7DC", borderRadius: 8, padding: "6px 8px", fontSize: 12.5 }} />
+            <input placeholder="購入店" value={state.shop} onChange={(e) => onUpdate(item.id, { shop: e.target.value })} style={{ border: "1px solid #E4E7DC", borderRadius: 8, padding: "6px 8px", fontSize: 12.5 }} />
+            <input placeholder="URL" value={state.url} onChange={(e) => onUpdate(item.id, { url: e.target.value })} style={{ border: "1px solid #E4E7DC", borderRadius: 8, padding: "6px 8px", fontSize: 12.5 }} />
+            <textarea placeholder="メモ" value={state.memo} onChange={(e) => onUpdate(item.id, { memo: e.target.value })} rows={2} style={{ border: "1px solid #E4E7DC", borderRadius: 8, padding: "6px 8px", fontSize: 12.5, resize: "vertical" }} />
+          </div>
+
+          {item.includedItems && (
+            <div style={{ fontSize: 11, color: "#9AA192" }}>内訳: {item.includedItems.join("、")}</div>
+          )}
+          {item.safetyNotes && (
+            <div style={{ fontSize: 11, color: "#B23A48", background: "#F3E3E6", borderRadius: 8, padding: "6px 8px" }}>
+              {item.safetyNotes.map((s, i) => (
+                <div key={i}>⚠ {s}</div>
               ))}
             </div>
+          )}
+          {item.notes && <div style={{ fontSize: 11, color: "#9AA192" }}>{item.notes}</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SupplyTab({ itemState, setItemState, pregnancyInfo, setPregnancyInfo }) {
+  const accent = ACCENTS.supply.main;
+  const currentStageId = computeCurrentStageId(pregnancyInfo);
+  const [target, setTarget] = useState("all");
+  const [priorities, setPriorities] = useState(() => new Set(Object.keys(ENUM_PRIORITY)));
+
+  const updateItem = (id, patch) =>
+    setItemState((prev) => ({ ...prev, [id]: { ...getItemState(prev, id), ...patch } }));
+  const toggleFavorite = (id) => updateItem(id, { favorite: !getItemState(itemState, id).favorite });
+  const togglePriority = (p) =>
+    setPriorities((prev) => {
+      const next = new Set(prev);
+      if (next.has(p)) next.delete(p);
+      else next.add(p);
+      return next;
+    });
+
+  const visible = MASTER_ITEMS.filter((it) => {
+    if (target !== "all" && it.target !== target && it.target !== "shared") return false;
+    if (!priorities.has(it.priority)) return false;
+    return true;
+  });
+
+  const activeItems = (items) => items.filter((it) => !(it.conditional && getItemState(itemState, it.id).needed === false));
+
+  const progressFor = (targets) => {
+    const relevant = activeItems(MASTER_ITEMS.filter((it) => targets.includes(it.target)));
+    const done = relevant.filter((it) => COMPLETED_STATUSES.includes(getItemState(itemState, it.id).status)).length;
+    return { done, total: relevant.length };
+  };
+  const motherProgress = progressFor(["mother", "shared"]);
+  const babyProgress = progressFor(["baby", "shared"]);
+
+  const budget = activeItems(MASTER_ITEMS).reduce(
+    (acc, it) => {
+      const s = getItemState(itemState, it.id);
+      if (s.plannedPrice) acc.planned += s.plannedPrice;
+      if (s.actualPrice) acc.actual += s.actualPrice;
+      return acc;
+    },
+    { planned: 0, actual: 0 }
+  );
+
+  const todayItems = visible.filter((it) => it.stages.includes(currentStageId));
+  const otherItems = visible.filter((it) => !it.stages.includes(currentStageId));
+  const otherByCategory = {};
+  otherItems.forEach((it) => {
+    (otherByCategory[it.category] = otherByCategory[it.category] || []).push(it);
+  });
+
+  return (
+    <div>
+      <PregnancyInfoBar info={pregnancyInfo} setInfo={setPregnancyInfo} currentStageId={currentStageId} />
+
+      <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+        <div style={{ flex: 1, background: "#fff", borderRadius: 10, padding: "8px 10px" }}>
+          <div style={{ fontSize: 10.5, color: "#9AA192" }}>母親の準備</div>
+          <ProgressBar done={motherProgress.done} total={motherProgress.total} accent={accent} />
+        </div>
+        <div style={{ flex: 1, background: "#fff", borderRadius: 10, padding: "8px 10px" }}>
+          <div style={{ fontSize: 10.5, color: "#9AA192" }}>赤ちゃんの準備</div>
+          <ProgressBar done={babyProgress.done} total={babyProgress.total} accent={accent} />
+        </div>
+      </div>
+
+      <div style={{ background: "#fff", borderRadius: 10, padding: "8px 12px", marginBottom: 12, display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+        <span style={{ color: "#5C6355" }}>予定金額合計</span>
+        <span style={{ fontWeight: 700, color: "#262B22" }}>¥{budget.planned.toLocaleString()}</span>
+        <span style={{ color: "#5C6355" }}>実支出合計</span>
+        <span style={{ fontWeight: 700, color: accent }}>¥{budget.actual.toLocaleString()}</span>
+      </div>
+
+      <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+        {[
+          { key: "all", label: "すべて" },
+          { key: "mother", label: "母親" },
+          { key: "baby", label: "赤ちゃん" },
+          { key: "shared", label: "共通" },
+        ].map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setTarget(key)}
+            style={{
+              flex: 1,
+              border: `1.5px solid ${target === key ? accent : "#E4E7DC"}`,
+              background: target === key ? accent : "#fff",
+              color: target === key ? "#fff" : "#5C6355",
+              borderRadius: 8,
+              padding: "6px 4px",
+              fontSize: 11.5,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
+        {Object.entries(ENUM_PRIORITY).map(([k, label]) => (
+          <button
+            key={k}
+            onClick={() => togglePriority(k)}
+            style={{
+              border: `1px solid ${priorities.has(k) ? PRIORITY_COLOR[k] : "#E4E7DC"}`,
+              background: priorities.has(k) ? `${PRIORITY_COLOR[k]}18` : "#fff",
+              color: priorities.has(k) ? PRIORITY_COLOR[k] : "#B7BBA9",
+              borderRadius: 20,
+              padding: "4px 10px",
+              fontSize: 11,
+              cursor: "pointer",
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {todayItems.length > 0 && (
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ fontFamily: "'Shippori Mincho', serif", fontSize: 13, fontWeight: 700, color: accent, marginBottom: 8 }}>
+            今の時期に必要なもの（{STAGE_NAME[currentStageId]}）
           </div>
-        );
-      })}
-      <AddRow accent={accent} placeholder="必需品を追加" onAdd={add} />
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {todayItems.map((it) => (
+              <ItemCard key={it.id} item={it} state={getItemState(itemState, it.id)} accent={accent} currentStageId={currentStageId} onUpdate={updateItem} onToggleFavorite={toggleFavorite} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {Object.entries(otherByCategory).map(([cat, items]) => (
+        <div key={cat} style={{ marginBottom: 18 }}>
+          <div style={{ fontFamily: "'Shippori Mincho', serif", fontSize: 12.5, fontWeight: 700, color: "#B4B99F", marginBottom: 8 }}>
+            {CATEGORY_NAME[cat]}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {items.map((it) => (
+              <ItemCard key={it.id} item={it} state={getItemState(itemState, it.id)} accent={accent} currentStageId={currentStageId} onUpdate={updateItem} onToggleFavorite={toggleFavorite} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── バッグタブ ──
+function BagsTab({ itemState, setItemState }) {
+  const accent = "#7A6C9E";
+  const [activeBag, setActiveBag] = useState(MASTER_BAGS[0].id);
+  const updateItem = (id, patch) => setItemState((prev) => ({ ...prev, [id]: { ...getItemState(prev, id), ...patch } }));
+
+  const bag = MASTER_BAGS.find((b) => b.id === activeBag);
+  const items = MASTER_ITEMS.filter((it) => it.bagTags && it.bagTags.includes(activeBag));
+  const packed = items.filter((it) => getItemState(itemState, it.id).status === "packed").length;
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
+        {MASTER_BAGS.map((b) => (
+          <button
+            key={b.id}
+            onClick={() => setActiveBag(b.id)}
+            style={{
+              border: `1.5px solid ${activeBag === b.id ? accent : "#E4E7DC"}`,
+              background: activeBag === b.id ? accent : "#fff",
+              color: activeBag === b.id ? "#fff" : "#5C6355",
+              borderRadius: 8,
+              padding: "6px 10px",
+              fontSize: 11.5,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            {b.name}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ background: "#fff", borderRadius: 10, padding: "10px 12px", marginBottom: 12 }}>
+        <div style={{ fontSize: 12, color: "#5C6355", marginBottom: 8 }}>{bag.description}</div>
+        <ProgressBar done={packed} total={items.length} accent={accent} />
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {items.map((it) => {
+          const s = getItemState(itemState, it.id);
+          const inBag = s.status === "packed";
+          return (
+            <div key={it.id} style={{ background: "#fff", borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 10, opacity: inBag ? 0.6 : 1 }}>
+              <button
+                onClick={() => updateItem(it.id, { status: inBag ? "purchased" : "packed" })}
+                style={{ border: "none", background: "none", padding: 0, cursor: "pointer" }}
+              >
+                <Stamp active={inBag} />
+              </button>
+              <span style={{ flex: 1, fontFamily: "'Zen Kaku Gothic New', sans-serif", fontSize: 13, color: "#262B22", textDecoration: inBag ? "line-through" : "none" }}>
+                {it.name}
+              </span>
+              <span style={{ fontSize: 10.5, color: "#9AA192" }}>{ENUM_TARGET[it.target]}</span>
+            </div>
+          );
+        })}
+        {items.length === 0 && <div style={{ fontSize: 12, color: "#9AA192", textAlign: "center", padding: 20 }}>このバッグに対象品目はありません</div>}
+      </div>
     </div>
   );
 }
@@ -1287,70 +3532,164 @@ function CompareTab({ favorites, onToggleFavorite }) {
   );
 }
 
-// ── データの保存先：無料のFirebase（プロジェクト: ninsinapp）を使い、
-// 夫婦間でリアルタイムに近い形で共有します。Claudeの課金状況とは無関係に動きます。
-const FIREBASE_ROOM = "our-family"; // 二人だけの合言葉に変えたい場合はここを書き換えてください
-const docRef = firebase.firestore().collection("sodate-note").doc(FIREBASE_ROOM);
+const STORAGE_KEY = "sodate-note:data";
+
+// ─────────────────────────────────────────────────────────
+// 無料でも永続化・共有できるようにするための設定。
+// Firebase（無料のSparkプラン）のプロジェクトを作って、下の3つを埋めると
+// Claudeの有料プランに関係なく、夫婦間でデータが同期されるようになります。
+// 空のままなら、これまで通りClaude共有ストレージ（Pro以上）→ダメなら
+// この端末だけのローカル保存、の順で自動的にフォールバックします。
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDiCN8bhEJElWQkj1Eev39DUrqsXCnlq4o",
+  projectId: "ninsinapp",
+};
+const FIREBASE_ROOM = "our-family"; // 二人だけの合言葉に変えるとより安心です
+
+async function firestoreLoad() {
+  if (!FIREBASE_CONFIG.projectId) return null;
+  const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_CONFIG.projectId}/databases/(default)/documents/sodate-note/${FIREBASE_ROOM}?key=${FIREBASE_CONFIG.apiKey}`;
+  const res = await fetch(url);
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status}: ${body.slice(0, 200)}`);
+  }
+  const json = await res.json();
+  const raw = json?.fields?.data?.stringValue;
+  return raw ? JSON.parse(raw) : null;
+}
+
+async function firestoreSave(payload) {
+  if (!FIREBASE_CONFIG.projectId) return { ok: false, error: "not configured" };
+  const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_CONFIG.projectId}/databases/(default)/documents/sodate-note/${FIREBASE_ROOM}?updateMask.fieldPaths=data&key=${FIREBASE_CONFIG.apiKey}`;
+  try {
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fields: { data: { stringValue: JSON.stringify(payload) } } }),
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      return { ok: false, error: `HTTP ${res.status}: ${body.slice(0, 200)}` };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e && e.message ? e.message : e) };
+  }
+}
 
 function SodateNote() {
   const [tab, setTab] = useState("money");
   const [money, setMoney] = useState(initialMoney);
-  const [todo, setTodo] = useState(initialTodo);
-  const [supply, setSupply] = useState(initialSupply);
+  const [pregnancyInfo, setPregnancyInfo] = useState({ weekInput: 20, weekInputDate: new Date().toISOString().slice(0, 10), babyBirthDate: "" });
+  const [taskState, setTaskState] = useState({});
+  const [itemState, setItemState] = useState({});
   const [favorites, setFavorites] = useState(() => new Set());
-  const [syncState, setSyncState] = useState("loading"); // loading | synced | saving | error
+  const [syncState, setSyncState] = useState("loading"); // loading | synced | saving | error | local
+  const [backend, setBackend] = useState("firebase"); // firebase | claude | local
   const [firebaseError, setFirebaseError] = useState("");
   const loadedRef = React.useRef(false);
-  const lastWrittenRef = React.useRef("");
 
   const applyPayload = (parsed) => {
     if (!parsed) return;
     if (parsed.money) setMoney(parsed.money);
-    if (parsed.todo) setTodo(parsed.todo);
-    if (parsed.supply) setSupply(parsed.supply);
+    if (parsed.pregnancyInfo) setPregnancyInfo(parsed.pregnancyInfo);
+    if (parsed.taskState) setTaskState(parsed.taskState);
+    if (parsed.itemState) setItemState(parsed.itemState);
     if (parsed.favorites) setFavorites(new Set(parsed.favorites));
   };
 
-  // リアルタイム購読：自分か夫がどちらかで変更すると、両方の画面が自動的に更新される
+  // 初回読み込み：Firebase（無料・プラン非依存）→ Claude共有ストレージ（Pro以上）→ この端末のみ、の順で試す
   React.useEffect(() => {
-    const unsubscribe = docRef.onSnapshot(
-      (snap) => {
-        const raw = snap.exists ? snap.data().payload : null;
-        if (raw && raw !== lastWrittenRef.current) {
-          try {
-            applyPayload(JSON.parse(raw));
-          } catch (e) {
-            // 壊れたデータは無視
-          }
+    let cancelled = false;
+    (async () => {
+      if (FIREBASE_CONFIG.projectId) {
+        try {
+          const parsed = await firestoreLoad();
+          if (cancelled) return;
+          applyPayload(parsed);
+          setBackend("firebase");
+          setSyncState("synced");
+          loadedRef.current = true;
+          return;
+        } catch (e) {
+          if (!cancelled) setFirebaseError(String(e && e.message ? e.message : e));
+          // Firebase未設定・接続失敗時はClaudeストレージにフォールバック
         }
-        setSyncState("synced");
-        setFirebaseError("");
-        loadedRef.current = true;
-      },
-      (err) => {
-        setSyncState("error");
-        setFirebaseError(String(err && err.message ? err.message : err));
-        loadedRef.current = true;
       }
-    );
-    return () => unsubscribe();
+      if (window.storage) {
+        try {
+          const result = await window.storage.get(STORAGE_KEY, true);
+          if (cancelled) return;
+          if (result && result.value) applyPayload(JSON.parse(result.value));
+          setBackend("claude");
+          setSyncState("synced");
+        } catch (e) {
+          setBackend("claude");
+          setSyncState("synced");
+        } finally {
+          loadedRef.current = true;
+        }
+        return;
+      }
+      setBackend("local");
+      setSyncState("local");
+      loadedRef.current = true;
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // 変更のたびにFirestoreへ保存
+  // 変更のたびに、使えるバックエンドへ保存
   React.useEffect(() => {
     if (!loadedRef.current) return;
-    const payload = JSON.stringify({ money, todo, supply, favorites: [...favorites] });
-    if (payload === lastWrittenRef.current) return;
-    lastWrittenRef.current = payload;
+    let cancelled = false;
+    const payload = { money, pregnancyInfo, taskState, itemState, favorites: [...favorites] };
     setSyncState("saving");
-    docRef
-      .set({ payload }, { merge: true })
-      .then(() => setSyncState("synced"))
-      .catch((err) => {
-        setSyncState("error");
-        setFirebaseError(String(err && err.message ? err.message : err));
-      });
-  }, [money, todo, supply, favorites]);
+    (async () => {
+      try {
+        if (backend === "firebase") {
+          const result = await firestoreSave(payload);
+          if (cancelled) return;
+          if (result.ok) {
+            setFirebaseError("");
+            setSyncState("synced");
+          } else {
+            setFirebaseError(result.error || "");
+            setSyncState("error");
+          }
+          return;
+        }
+        if (backend === "claude" && window.storage) {
+          const result = await window.storage.set(STORAGE_KEY, JSON.stringify(payload), true);
+          if (!cancelled) setSyncState(result ? "synced" : "error");
+          return;
+        }
+        if (!cancelled) setSyncState("local");
+      } catch (e) {
+        if (!cancelled) setSyncState("error");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [money, pregnancyInfo, taskState, itemState, favorites, backend]);
+
+  // Firebase使用時は20秒ごとに相手の変更を取り込む（簡易的なほぼリアルタイム同期）
+  React.useEffect(() => {
+    if (backend !== "firebase") return;
+    const interval = setInterval(async () => {
+      try {
+        const parsed = await firestoreLoad();
+        applyPayload(parsed);
+      } catch (e) {
+        // 通信エラー時は次回のポーリングに任せる
+      }
+    }, 20000);
+    return () => clearInterval(interval);
+  }, [backend]);
 
   const toggleFavorite = (id) => {
     setFavorites((prev) => {
@@ -1365,13 +3704,14 @@ function SodateNote() {
     { key: "money", label: "お金", icon: Wallet },
     { key: "todo", label: "やること", icon: ListChecks },
     { key: "supply", label: "必需品", icon: Package },
+    { key: "bags", label: "バッグ", icon: Briefcase },
     { key: "compare", label: "検討比較", icon: Scale },
   ];
 
   const syncLabel = {
     loading: "読み込み中…",
     saving: "保存中…",
-    synced: "夫婦で共有中（無料・永続）",
+    synced: backend === "firebase" ? "夫婦で共有中（無料・永続）" : backend === "claude" ? "夫婦で共有中（Claude有料プラン）" : "夫婦で共有中",
     error: "保存に失敗しました",
     local: "この端末だけに保存（未設定）",
   }[syncState];
@@ -1397,8 +3737,8 @@ function SodateNote() {
       <div style={{ width: "100%", maxWidth: 420, minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative" }}>
         {/* header */}
         <div style={{ padding: "28px 20px 16px" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <div style={{ fontFamily: "'Shippori Mincho', serif", fontSize: 19, fontWeight: 700, color: "#262B22", lineHeight: 1.3 }}>
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+            <div style={{ fontFamily: "'Shippori Mincho', serif", fontSize: 24, fontWeight: 700, color: "#262B22" }}>
               妊娠・出産サポート
             </div>
             <div
@@ -1493,8 +3833,9 @@ function SodateNote() {
             {ACCENTS[tab].label}
           </div>
           {tab === "money" && <MoneyTab items={money} setItems={setMoney} />}
-          {tab === "todo" && <TodoTab items={todo} setItems={setTodo} />}
-          {tab === "supply" && <SupplyTab items={supply} setItems={setSupply} />}
+          {tab === "todo" && <TodoTab taskState={taskState} setTaskState={setTaskState} pregnancyInfo={pregnancyInfo} setPregnancyInfo={setPregnancyInfo} />}
+          {tab === "supply" && <SupplyTab itemState={itemState} setItemState={setItemState} pregnancyInfo={pregnancyInfo} setPregnancyInfo={setPregnancyInfo} />}
+          {tab === "bags" && <BagsTab itemState={itemState} setItemState={setItemState} />}
           {tab === "compare" && <CompareTab favorites={favorites} onToggleFavorite={toggleFavorite} />}
         </div>
       </div>
